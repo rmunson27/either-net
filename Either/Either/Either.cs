@@ -87,4 +87,50 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
         _isRight = IsRight;
     }
     #endregion
+
+    #region Methods
+    #region TryGet
+    /// <summary>
+    /// Tries to get the <typeparamref name="TLeft"/> value wrapped in this instance.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns>Whether or not this instance wraps an instance of type <typeparamref name="TLeft"/>.</returns>
+    public bool TryGetLeft([MaybeNullWhen(false), MaybeDefaultWhen(false)] out TLeft value)
+    {
+        value = _left;
+        return !_isRight;
+    }
+
+    /// <summary>
+    /// Tries to get the <typeparamref name="TRight"/> value wrapped in this instance.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns>Whether or not this instance wraps an instance of type <typeparamref name="TRight"/>.</returns>
+    public bool TryGetRight([MaybeNullWhen(false), MaybeDefaultWhen(false)] out TRight value)
+    {
+        value = _right;
+        return _isRight;
+    }
+
+    /// <summary>
+    /// Tries to get the <typeparamref name="TRight"/> value wrapped in this instance, getting the
+    /// <typeparamref name="TLeft"/> value wrapped in this instance otherwise.
+    /// </summary>
+    /// <remarks>
+    /// This method is essentially a deconstructor; it can be used to describe the entire structure of the object
+    /// with a single call.
+    /// </remarks>
+    /// <param name="leftValue"></param>
+    /// <param name="rightValue"></param>
+    /// <returns>Whether or not this instance wraps an instance of type <typeparamref name="TRight"/>.</returns>
+    public bool TryGetRight(
+        [MaybeNullWhen(true), MaybeDefaultWhen(true)] out TLeft leftValue,
+        [MaybeNullWhen(false), MaybeDefaultWhen(false)] out TRight rightValue)
+    {
+        leftValue = _left;
+        rightValue = _right;
+        return _isRight;
+    }
+    #endregion
+    #endregion
 }
