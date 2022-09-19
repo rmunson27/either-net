@@ -282,5 +282,54 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
         return IsRight;
     }
     #endregion
+
+    #region Equality
+    /// <summary>
+    /// Determines if the current instance is equal to another object of the same type.
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    public bool Equals(Either<TLeft, TRight> other) => Equals(other, null, null);
+
+    /// <summary>
+    /// Determines if the current instance is equal to another object of the same type, using the specified equality
+    /// comparers to compare equality.
+    /// </summary>
+    /// <param name="other">The other object to compare with.</param>
+    /// <param name="leftComparer">
+    /// An <see cref="IEqualityComparer{T}"/> to use to compare equality of <typeparamref name="TLeft"/> instances, or
+    /// <see langword="null"/> to use the default comparer for type <typeparamref name="TLeft"/>.
+    /// </param>
+    /// <param name="rightComparer">
+    /// An <see cref="IEqualityComparer{T}"/> to use to compare equality of <typeparamref name="TRight"/> instances, or
+    /// <see langword="null"/> to use the default comparer for type <typeparamref name="TRight"/>.
+    /// </param>
+    /// <returns></returns>
+    public bool Equals(
+        Either<TLeft, TRight> other, IEqualityComparer<TLeft>? leftComparer, IEqualityComparer<TRight>? rightComparer)
+    {
+        leftComparer ??= EqualityComparer<TLeft>.Default;
+        rightComparer ??= EqualityComparer<TRight>.Default;
+
+        if (IsRight) return other.IsRight && rightComparer.Equals(_right, other._right);
+        else return other.IsLeft && leftComparer.Equals(_left, other._left);
+    }
+
+    /// <summary>
+    /// Gets a hash code for the current instance.
+    /// </summary>
+    /// <returns></returns>
+    public override int GetHashCode()
+        => IsRight ? HashCode.Combine(true, _right) : HashCode.Combine(false, _left);
+    #endregion
+
+    #region ToString
+    /// <summary>
+    /// Gets a string that represents the current instance.
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString()
+        => $"{nameof(Either)} {{ {(IsRight ? $"Right = {_right}" : $"Left = {_left}")} }}";
+    #endregion
     #endregion
 }
