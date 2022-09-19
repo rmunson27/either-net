@@ -323,6 +323,16 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
         => IsRight ? HashCode.Combine(true, _right) : HashCode.Combine(false, _left);
     #endregion
 
+    #region GetType
+    /// <summary>
+    /// Gets the type of the value wrapped in this instance, or <see langword="null"/> if the instance wraps
+    /// <see langword="null"/>.
+    /// </summary>
+    /// <returns></returns>
+    [return: NotDefaultIfTypeParamsNonDefaultable(nameof(TLeft), nameof(TRight))]
+    public Type? GetWrappedType() => IsRight ? _right?.GetType() : _left?.GetType();
+    #endregion
+
     #region ToString
     /// <summary>
     /// Gets a string that represents the current instance.
