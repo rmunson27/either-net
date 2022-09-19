@@ -16,8 +16,8 @@ public class GetValuesTest
     {
         const int leftEitherValue = 4;
         const string rightEitherValue = "AString";
-        Either<int, string> leftEither = new(leftEitherValue);
-        Either<int, string> rightEither = new(rightEitherValue);
+        Either<int, string> leftEither = leftEitherValue;
+        Either<int, string> rightEither = rightEitherValue;
 
         int i;
         string? s;

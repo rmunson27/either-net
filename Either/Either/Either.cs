@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -72,15 +73,18 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// Constructs a new <see cref="Either{TLeft, TRight}"/> wrapping the <typeparamref name="TLeft"/> value passed in.
     /// </summary>
     /// <param name="Value"></param>
-    public Either(TLeft Value) : this(Value, default, IsRight: false) { }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal Either(TLeft Value) : this(Value, default, IsRight: false) { }
 
     /// <summary>
     /// Constructs a new <see cref="Either{TLeft, TRight}"/> wrapping the <typeparamref name="TRight"/> value passed in.
     /// </summary>
     /// <param name="Value"></param>
-    public Either(TRight Value) : this(default, Value, IsRight: true) { }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal Either(TRight Value) : this(default, Value, IsRight: true) { }
 
-    private Either([AllowNull, AllowDefault] TLeft LeftValue, [AllowNull, AllowDefault] TRight RightValue, bool IsRight)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal Either([AllowNull, AllowDefault] TLeft LeftValue, [AllowNull, AllowDefault] TRight RightValue, bool IsRight)
     {
         _left = LeftValue;
         _right = RightValue;
@@ -89,6 +93,100 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     #endregion
 
     #region Methods
+    #region Conversion
+    /// <summary>
+    /// Implicitly converts a <typeparamref name="TLeft"/> to an instance of <see cref="Either{TLeft, TRight}"/>.
+    /// </summary>
+    /// <param name="left"></param>
+    public static implicit operator Either<TLeft, TRight>(TLeft left) => new(left);
+
+    /// <summary>
+    /// Implicitly converts a <typeparamref name="TRight"/> to an instance of <see cref="Either{TLeft, TRight}"/>.
+    /// </summary>
+    /// <param name="right"></param>
+    public static implicit operator Either<TLeft, TRight>(TRight right) => new(right);
+
+    /// <summary>
+    /// Explicitly converts an <see cref="Either{TLeft, TRight}"/> to an instance of <typeparamref name="TLeft"/>.
+    /// </summary>
+    /// <param name="either"></param>
+    /// <exception cref="EitherException">The either was right.</exception>
+    public static explicit operator TLeft(Either<TLeft, TRight> either) => either.Left;
+    
+    /// <summary>
+    /// Explicitly converts an <see cref="Either{TLeft, TRight}"/> to an instance of <typeparamref name="TRight"/>.
+    /// </summary>
+    /// <param name="either"></param>
+    /// <exception cref="EitherException">The either was left.</exception>
+    public static explicit operator TRight(Either<TLeft, TRight> either) => either.Right;
+    #endregion
+
+    #region Select
+    /// <summary>
+    /// Maps a selector over the left side of this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <param name="selector"></param>
+    /// <returns></returns>
+    public Either<TLeftResult, TRight> SelectLeft<TLeftResult>(Func<TLeft, TLeftResult> selector)
+        => IsRight ? new(_right) : new(selector(_left));
+
+    /// <summary>
+    /// Maps a side-dependent selector over this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="leftSelector"></param>
+    /// <param name="rightSelector"></param>
+    /// <returns></returns>
+    public Either<TLeftResult, TRightResult> Select<TLeftResult, TRightResult>(
+        Func<TLeft, TLeftResult> leftSelector, Func<TRight, TRightResult> rightSelector)
+        => IsRight ? new(rightSelector(_right)) : new(leftSelector(_left));
+
+    /// <summary>
+    /// Maps a selector over the right side of this instance.
+    /// </summary>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="selector"></param>
+    /// <returns></returns>
+    public Either<TLeft, TRightResult> SelectRight<TRightResult>(Func<TRight, TRightResult> selector)
+        => IsRight ? new(selector(_right)) : new(_left);
+    #endregion
+
+    #region Factory
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TLeft"/> value passed in
+    /// on the left.
+    /// </summary>
+    /// <param name="left"></param>
+    /// <returns></returns>
+    public static Either<TLeft, TRight> NewLeft(TLeft left) => new(left);
+
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TLeft"/> value passed in
+    /// on the left.
+    /// </summary>
+    /// <param name="left"></param>
+    /// <returns></returns>
+    public static Either<TLeft, TRight> New(TLeft left) => new(left);
+
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TRight"/> value passed in
+    /// on the right.
+    /// </summary>
+    /// <param name="right"></param>
+    /// <returns></returns>
+    public static Either<TLeft, TRight> New(TRight right) => new(right);
+
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TRight"/> value passed in
+    /// on the right.
+    /// </summary>
+    /// <param name="right"></param>
+    /// <returns></returns>
+    public static Either<TLeft, TRight> NewRight(TRight right) => new(right);
+    #endregion
+
     #region TryGet
     /// <summary>
     /// Tries to get the <typeparamref name="TLeft"/> value wrapped in this instance.
