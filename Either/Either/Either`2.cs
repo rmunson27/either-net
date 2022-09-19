@@ -64,8 +64,8 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// </summary>
     public bool IsRight { get; }
 
-    [AllowNull, AllowDefault] private readonly TLeft _left;
-    [AllowNull, AllowDefault] private readonly TRight _right;
+    [AllowNull, AllowDefault] internal readonly TLeft _left;
+    [AllowNull, AllowDefault] internal readonly TRight _right;
     #endregion
 
     #region Constructors
