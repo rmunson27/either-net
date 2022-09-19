@@ -21,6 +21,12 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     public bool IsDefault => !IsRight && Defaults<TLeft>.IsDefault(_left);
 
     /// <summary>
+    /// Gets the value wrapped in this instance typed as an <see cref="object"/>.
+    /// </summary>
+    [NotDefaultIfTypeParamsNonDefaultable(nameof(TLeft), nameof(TRight))]
+    public object? Value => IsRight ? _right : _left;
+
+    /// <summary>
     /// Gets whether or not this object wraps a value of type <typeparamref name="TLeft"/>.
     /// </summary>
     public bool IsLeft => !IsRight;
