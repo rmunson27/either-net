@@ -26,7 +26,7 @@ public class DefaultabilityTest
         Assert.IsTrue(Either<string?, int>.New(null).IsDefault);
 
         // Values with non-default class on the left should not be marked as default
-        Assert.IsFalse(Either.TRight<int>.Left("").IsDefault);
+        Assert.IsFalse(Either<string, int>.New("").IsDefault);
         Assert.IsFalse(Either<string, int>.New("").IsDefault);
 
         // Values with value on the right should never be marked as default
@@ -79,7 +79,7 @@ public class DefaultabilityTest
         Assert.IsTrue(Either<ImmutableArray<int>, int>.NewLeft(default).IsDefault);
 
         // Values with non-default immutable arrays on the left should not be marked as default
-        Assert.IsFalse(Either.TRight<int>.Left(ImmutableArray<int>.Empty).IsDefault);
+        Assert.IsFalse(Either<ImmutableArray<int>, int>.New(ImmutableArray<int>.Empty).IsDefault);
     }
 
     /// <summary>
