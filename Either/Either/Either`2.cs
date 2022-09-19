@@ -1,6 +1,7 @@
 ﻿using Rem.Core.Attributes;
 using Rem.Core.ComponentModel;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -142,6 +143,37 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="either"></param>
     /// <exception cref="EitherException">The either was left.</exception>
     public static explicit operator TRight(Either<TLeft, TRight> either) => either.Right;
+    #endregion
+
+    #region ToEnumerable
+    /// <summary>
+    /// Gets an <see cref="IEnumerable{T}"/> wrapping the right value wrapped in this instance, or an empty
+    /// <see cref="IEnumerable{T}"/> if this instance is left.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<TRight> EnumerateRight()
+    {
+        if (IsRight) yield return _right;
+    }
+
+    /// <summary>
+    /// Gets an <see cref="IEnumerable"/> wrapping the value wrapped in this instance.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable Enumerate()
+    {
+        yield return IsRight ? _right : _left;
+    }
+
+    /// <summary>
+    /// Gets an <see cref="IEnumerable{T}"/> wrapping the left value wrapped in this instance, or an empty
+    /// <see cref="IEnumerable{T}"/> if this instance is right.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<TLeft> EnumerateLeft()
+    {
+        if (IsLeft) yield return _left;
+    }
     #endregion
 
     #region Select
