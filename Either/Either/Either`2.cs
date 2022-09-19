@@ -168,7 +168,8 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// </param>
     /// <returns></returns>
     public bool Equals(
-        Either<TLeft, TRight> other, IEqualityComparer<TLeft>? leftComparer, IEqualityComparer<TRight>? rightComparer)
+        in Either<TLeft, TRight> other,
+        IEqualityComparer<TLeft>? leftComparer, IEqualityComparer<TRight>? rightComparer)
     {
         leftComparer ??= EqualityComparer<TLeft>.Default;
         rightComparer ??= EqualityComparer<TRight>.Default;
