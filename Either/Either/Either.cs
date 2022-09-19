@@ -153,6 +153,40 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
         => IsRight ? new(selector(_right)) : new(_left);
     #endregion
 
+    #region SelectMany
+    /// <summary>
+    /// Maps a selector over the left side of this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <param name="selector"></param>
+    /// <returns></returns>
+    public Either<TLeftResult, TRight> SelectManyLeft<TLeftResult>(Func<TLeft, Either<TLeftResult, TRight>> selector)
+        => IsRight ? new(_right) : selector(_left);
+
+    /// <summary>
+    /// Maps a side-specific selector over this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="leftSelector"></param>
+    /// <param name="rightSelector"></param>
+    /// <returns></returns>
+    public Either<TLeftResult, TRightResult> SelectMany<TLeftResult, TRightResult>(
+        Func<TLeft, Either<TLeftResult, TRightResult>> leftSelector,
+        Func<TRight, Either<TLeftResult, TRightResult>> rightSelector)
+        => IsRight ? rightSelector(_right) : leftSelector(_left);
+
+    /// <summary>
+    /// Maps a selector over the right side of this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <param name="selector"></param>
+    /// <returns></returns>
+    public Either<TLeft, TRightResult> SelectManyRight<TRightResult>(
+        Func<TRight, Either<TLeft, TRightResult>> selector)
+        => IsRight ? selector(_right) : new(_left);
+    #endregion
+
     #region Factory
     /// <summary>
     /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TLeft"/> value passed in
