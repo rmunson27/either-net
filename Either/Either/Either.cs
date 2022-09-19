@@ -22,13 +22,13 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <summary>
     /// Gets whether or not this object wraps a value of type <typeparamref name="TLeft"/>.
     /// </summary>
-    public bool IsLeft => !_isRight;
+    public bool IsLeft => !IsRight;
 
     /// <summary>
     /// Gets the <typeparamref name="TLeft"/> value wrapped in this instance, or the default value of type
     /// <typeparamref name="TLeft"/> if this instance wraps a value of type <typeparamref name="TRight"/>.
     /// </summary>
-    [MaybeNull, MaybeDefault] public TLeft LeftOrDefault => _isRight ? default : _left;
+    [MaybeNull, MaybeDefault] public TLeft LeftOrDefault => IsRight ? default : _left;
 
     /// <summary>
     /// Gets the <typeparamref name="TLeft"/> value wrapped in this instance.
@@ -37,7 +37,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// This instance wraps an instance of <typeparamref name="TRight"/>.
     /// </exception>
     public TLeft Left
-        => _isRight
+        => IsRight
             ? throw new EitherException($"Invalid left access of {nameof(Either<TLeft, TRight>)}.")
             : _left;
 
@@ -45,7 +45,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// Gets the <typeparamref name="TRight"/> value wrapped in this instance, or the default value of type
     /// <typeparamref name="TRight"/> if this instance wraps a value of type <typeparamref name="TLeft"/>.
     /// </summary>
-    [MaybeNull, MaybeDefault] public TRight RightOrDefault => _isRight ? _right : default;
+    [MaybeNull, MaybeDefault] public TRight RightOrDefault => IsRight ? _right : default;
 
     /// <summary>
     /// Gets the <typeparamref name="TRight"/> value wrapped in this instance.
@@ -54,15 +54,14 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// This instance wraps an instance of <typeparamref name="TLeft"/>.
     /// </exception>
     public TRight Right
-        => _isRight
+        => IsRight
             ? _right
             : throw new EitherException($"Invalid right access of {nameof(Either<TRight, TRight>)}.");
 
     /// <summary>
     /// Gets whether or not this object wraps a value of type <typeparamref name="TRight"/>.
     /// </summary>
-    public bool IsRight => _isRight;
-    private readonly bool _isRight;
+    public bool IsRight { get; }
 
     [AllowNull, AllowDefault] private readonly TLeft _left;
     [AllowNull, AllowDefault] private readonly TRight _right;
@@ -88,7 +87,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     {
         _left = LeftValue;
         _right = RightValue;
-        _isRight = IsRight;
+        this.IsRight = IsRight;
     }
     #endregion
 
@@ -196,7 +195,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     public bool TryGetLeft([MaybeNullWhen(false), MaybeDefaultWhen(false)] out TLeft value)
     {
         value = _left;
-        return !_isRight;
+        return !IsRight;
     }
 
     /// <summary>
@@ -207,7 +206,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     public bool TryGetRight([MaybeNullWhen(false), MaybeDefaultWhen(false)] out TRight value)
     {
         value = _right;
-        return _isRight;
+        return IsRight;
     }
 
     /// <summary>
@@ -227,7 +226,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     {
         leftValue = _left;
         rightValue = _right;
-        return _isRight;
+        return IsRight;
     }
     #endregion
     #endregion
