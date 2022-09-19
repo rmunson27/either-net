@@ -170,13 +170,9 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     public bool Equals(
         in Either<TLeft, TRight> other,
         IEqualityComparer<TLeft>? leftComparer, IEqualityComparer<TRight>? rightComparer)
-    {
-        leftComparer ??= EqualityComparer<TLeft>.Default;
-        rightComparer ??= EqualityComparer<TRight>.Default;
-
-        if (IsRight) return other.IsRight && rightComparer.Equals(_right, other._right);
-        else return other.IsLeft && leftComparer.Equals(_left, other._left);
-    }
+        => IsRight
+            ? other.IsRight && rightComparer.DefaultIfNull().Equals(_right, other._right)
+            : other.IsLeft && leftComparer.DefaultIfNull().Equals(_left, other._left);
 
     /// <summary>
     /// Gets a hash code for the current instance.
