@@ -93,6 +93,18 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     #endregion
 
     #region Methods
+    #region CombineSides
+    /// <summary>
+    /// Combines the sides of this instance into a single value using the combiner methods passed in.
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="leftCombiner"></param>
+    /// <param name="rightCombiner"></param>
+    /// <returns></returns>
+    public TResult CombineSides<TResult>(Func<TLeft, TResult> leftCombiner, Func<TRight, TResult> rightCombiner)
+        => IsRight ? rightCombiner(_right) : leftCombiner(_left);
+    #endregion
+
     #region Conversion
     /// <summary>
     /// Implicitly converts a <typeparamref name="TLeft"/> to an instance of <see cref="Either{TLeft, TRight}"/>.
