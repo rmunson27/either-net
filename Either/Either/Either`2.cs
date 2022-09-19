@@ -399,6 +399,56 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     #endregion
     #endregion
 
+    #region Replace
+    #region Eager
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left value replaced
+    /// with the supplied <typeparamref name="TNewLeft"/> instance on the left, or the right value of this instance
+    /// on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <param name="newLeft"></param>
+    /// <returns></returns>
+    public Either<TNewLeft, TRight> ReplaceLeft<TNewLeft>(TNewLeft newLeft)
+        => IsRight ? new(_right) : new(newLeft);
+
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the right value replaced
+    /// with the supplied <typeparamref name="TNewRight"/> instance on the right, or the left value of this instance
+    /// on the left.
+    /// </summary>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newRight"></param>
+    /// <returns></returns>
+    public Either<TLeft, TNewRight> ReplaceRight<TNewRight>(TNewRight newRight)
+        => IsRight ? new(newRight) : new(_left);
+    #endregion
+
+    #region Lazy
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left value replaced
+    /// with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or the right
+    /// value of this instance on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <param name="newLeftFactory"></param>
+    /// <returns></returns>
+    public Either<TNewLeft, TRight> ReplaceLeftLazy<TNewLeft>(Func<TNewLeft> newLeftFactory)
+        => IsRight ? new(_right) : new(newLeftFactory());
+
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the right value replaced
+    /// with the result of calling the supplied <typeparamref name="TNewRight"/> factory on the right, or the left
+    /// value of this instance on the left.
+    /// </summary>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newRightFactory"></param>
+    /// <returns></returns>
+    public Either<TLeft, TNewRight> ReplaceRightLazy<TNewRight>(Func<TNewRight> newRightFactory)
+        => IsRight ? new(newRightFactory()) : new(_left);
+    #endregion
+    #endregion
+
     #region ToString
     /// <summary>
     /// Gets a string that represents the current instance.
