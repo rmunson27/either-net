@@ -13,11 +13,12 @@ namespace Rem.Core.Utilities.Monads;
 /// <summary>
 /// Represents a single value of one of two possible types.
 /// </summary>
+[DefaultableIfTypeParamsNonDefaultable(nameof(TLeft))]
 public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
 {
     #region Properties And Fields
     /// <inheritdoc/>
-    public bool IsDefault => !IsRight;
+    public bool IsDefault => !IsRight && Defaults<TLeft>.IsDefault(_left);
 
     /// <summary>
     /// Gets whether or not this object wraps a value of type <typeparamref name="TLeft"/>.
