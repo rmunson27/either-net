@@ -21,6 +21,11 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     public bool IsDefault => !IsRight && TypeInformation<TLeft>.IsDefault(_left);
 
     /// <summary>
+    /// Determines whether or not this instance wraps a <see langword="null"/> value.
+    /// </summary>
+    public bool WrapsNull => IsRight ? _right is null : _left is null;
+
+    /// <summary>
     /// Gets the value wrapped in this instance typed as an <see cref="object"/>.
     /// </summary>
     [NotDefaultIfTypeParamsNonDefaultable(nameof(TLeft), nameof(TRight))]
