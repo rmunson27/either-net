@@ -449,6 +449,15 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     #endregion
     #endregion
 
+    #region SwapSides
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the
+    /// <typeparamref name="TLeft"/> and <typeparamref name="TRight"/> sides swapped.
+    /// </summary>
+    /// <returns></returns>
+    public Either<TRight, TLeft> SwapSides() => new(_right, _left, !IsRight);
+    #endregion
+
     #region ToString
     /// <summary>
     /// Gets a string that represents the current instance.
