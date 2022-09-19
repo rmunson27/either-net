@@ -145,38 +145,91 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     public static explicit operator TRight(Either<TLeft, TRight> either) => either.Right;
     #endregion
 
-    #region Linq-Like
-    #region ToEnumerable
+    #region Equality
     /// <summary>
-    /// Gets an <see cref="IEnumerable{T}"/> wrapping the right value wrapped in this instance, or an empty
-    /// <see cref="IEnumerable{T}"/> if this instance is left.
+    /// Determines if the current instance is equal to another object of the same type.
     /// </summary>
+    /// <param name="other"></param>
     /// <returns></returns>
-    public IEnumerable<TRight> EnumerateRight()
+    public bool Equals(Either<TLeft, TRight> other) => Equals(other, null, null);
+
+    /// <summary>
+    /// Determines if the current instance is equal to another object of the same type, using the specified equality
+    /// comparers to compare equality.
+    /// </summary>
+    /// <param name="other">The other object to compare with.</param>
+    /// <param name="leftComparer">
+    /// An <see cref="IEqualityComparer{T}"/> to use to compare equality of <typeparamref name="TLeft"/> instances, or
+    /// <see langword="null"/> to use the default comparer for type <typeparamref name="TLeft"/>.
+    /// </param>
+    /// <param name="rightComparer">
+    /// An <see cref="IEqualityComparer{T}"/> to use to compare equality of <typeparamref name="TRight"/> instances, or
+    /// <see langword="null"/> to use the default comparer for type <typeparamref name="TRight"/>.
+    /// </param>
+    /// <returns></returns>
+    public bool Equals(
+        Either<TLeft, TRight> other, IEqualityComparer<TLeft>? leftComparer, IEqualityComparer<TRight>? rightComparer)
     {
-        if (IsRight) yield return _right;
+        leftComparer ??= EqualityComparer<TLeft>.Default;
+        rightComparer ??= EqualityComparer<TRight>.Default;
+
+        if (IsRight) return other.IsRight && rightComparer.Equals(_right, other._right);
+        else return other.IsLeft && leftComparer.Equals(_left, other._left);
     }
 
     /// <summary>
-    /// Gets an <see cref="IEnumerable"/> wrapping the value wrapped in this instance.
+    /// Gets a hash code for the current instance.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable Enumerate()
-    {
-        yield return IsRight ? _right : _left;
-    }
-
-    /// <summary>
-    /// Gets an <see cref="IEnumerable{T}"/> wrapping the left value wrapped in this instance, or an empty
-    /// <see cref="IEnumerable{T}"/> if this instance is right.
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<TLeft> EnumerateLeft()
-    {
-        if (IsLeft) yield return _left;
-    }
+    public override int GetHashCode()
+        => IsRight ? HashCode.Combine(true, _right) : HashCode.Combine(false, _left);
     #endregion
 
+    #region Factory
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TLeft"/> value passed in
+    /// on the left.
+    /// </summary>
+    /// <param name="left"></param>
+    /// <returns></returns>
+    public static Either<TLeft, TRight> NewLeft(TLeft left) => new(left);
+
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TLeft"/> value passed in
+    /// on the left.
+    /// </summary>
+    /// <param name="left"></param>
+    /// <returns></returns>
+    public static Either<TLeft, TRight> New(TLeft left) => new(left);
+
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TRight"/> value passed in
+    /// on the right.
+    /// </summary>
+    /// <param name="right"></param>
+    /// <returns></returns>
+    public static Either<TLeft, TRight> New(TRight right) => new(right);
+
+    /// <summary>
+    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TRight"/> value passed in
+    /// on the right.
+    /// </summary>
+    /// <param name="right"></param>
+    /// <returns></returns>
+    public static Either<TLeft, TRight> NewRight(TRight right) => new(right);
+    #endregion
+
+    #region GetType
+    /// <summary>
+    /// Gets the type of the value wrapped in this instance, or <see langword="null"/> if the instance wraps
+    /// <see langword="null"/>.
+    /// </summary>
+    /// <returns></returns>
+    [return: NotDefaultIfTypeParamsNonDefaultable(nameof(TLeft), nameof(TRight))]
+    public Type? GetWrappedType() => IsRight ? _right?.GetType() : _left?.GetType();
+    #endregion
+
+    #region Linq-Like
     #region Select
     /// <summary>
     /// Maps a selector over the left side of this instance.
@@ -241,6 +294,37 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     public Either<TLeft, TRightResult> SelectManyRight<TRightResult>(
         Func<TRight, Either<TLeft, TRightResult>> selector)
         => IsRight ? selector(_right) : new(_left);
+    #endregion
+
+    #region ToEnumerable
+    /// <summary>
+    /// Gets an <see cref="IEnumerable{T}"/> wrapping the right value wrapped in this instance, or an empty
+    /// <see cref="IEnumerable{T}"/> if this instance is left.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<TRight> EnumerateRight()
+    {
+        if (IsRight) yield return _right;
+    }
+
+    /// <summary>
+    /// Gets an <see cref="IEnumerable"/> wrapping the value wrapped in this instance.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable Enumerate()
+    {
+        yield return IsRight ? _right : _left;
+    }
+
+    /// <summary>
+    /// Gets an <see cref="IEnumerable{T}"/> wrapping the left value wrapped in this instance, or an empty
+    /// <see cref="IEnumerable{T}"/> if this instance is right.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<TLeft> EnumerateLeft()
+    {
+        if (IsLeft) yield return _left;
+    }
     #endregion
 
     #region Where
@@ -314,38 +398,13 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     #endregion
     #endregion
 
-    #region Factory
+    #region ToString
     /// <summary>
-    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TLeft"/> value passed in
-    /// on the left.
+    /// Gets a string that represents the current instance.
     /// </summary>
-    /// <param name="left"></param>
     /// <returns></returns>
-    public static Either<TLeft, TRight> NewLeft(TLeft left) => new(left);
-
-    /// <summary>
-    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TLeft"/> value passed in
-    /// on the left.
-    /// </summary>
-    /// <param name="left"></param>
-    /// <returns></returns>
-    public static Either<TLeft, TRight> New(TLeft left) => new(left);
-
-    /// <summary>
-    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TRight"/> value passed in
-    /// on the right.
-    /// </summary>
-    /// <param name="right"></param>
-    /// <returns></returns>
-    public static Either<TLeft, TRight> New(TRight right) => new(right);
-
-    /// <summary>
-    /// Creates a new <see cref="Either{TLeft, TRight}"/> containing the <typeparamref name="TRight"/> value passed in
-    /// on the right.
-    /// </summary>
-    /// <param name="right"></param>
-    /// <returns></returns>
-    public static Either<TLeft, TRight> NewRight(TRight right) => new(right);
+    public override string ToString()
+        => $"{nameof(Either)} {{ {(IsRight ? $"Right = {_right}" : $"Left = {_left}")} }}";
     #endregion
 
     #region TryGet
@@ -390,65 +449,6 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
         rightValue = _right;
         return IsRight;
     }
-    #endregion
-
-    #region Equality
-    /// <summary>
-    /// Determines if the current instance is equal to another object of the same type.
-    /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
-    public bool Equals(Either<TLeft, TRight> other) => Equals(other, null, null);
-
-    /// <summary>
-    /// Determines if the current instance is equal to another object of the same type, using the specified equality
-    /// comparers to compare equality.
-    /// </summary>
-    /// <param name="other">The other object to compare with.</param>
-    /// <param name="leftComparer">
-    /// An <see cref="IEqualityComparer{T}"/> to use to compare equality of <typeparamref name="TLeft"/> instances, or
-    /// <see langword="null"/> to use the default comparer for type <typeparamref name="TLeft"/>.
-    /// </param>
-    /// <param name="rightComparer">
-    /// An <see cref="IEqualityComparer{T}"/> to use to compare equality of <typeparamref name="TRight"/> instances, or
-    /// <see langword="null"/> to use the default comparer for type <typeparamref name="TRight"/>.
-    /// </param>
-    /// <returns></returns>
-    public bool Equals(
-        Either<TLeft, TRight> other, IEqualityComparer<TLeft>? leftComparer, IEqualityComparer<TRight>? rightComparer)
-    {
-        leftComparer ??= EqualityComparer<TLeft>.Default;
-        rightComparer ??= EqualityComparer<TRight>.Default;
-
-        if (IsRight) return other.IsRight && rightComparer.Equals(_right, other._right);
-        else return other.IsLeft && leftComparer.Equals(_left, other._left);
-    }
-
-    /// <summary>
-    /// Gets a hash code for the current instance.
-    /// </summary>
-    /// <returns></returns>
-    public override int GetHashCode()
-        => IsRight ? HashCode.Combine(true, _right) : HashCode.Combine(false, _left);
-    #endregion
-
-    #region GetType
-    /// <summary>
-    /// Gets the type of the value wrapped in this instance, or <see langword="null"/> if the instance wraps
-    /// <see langword="null"/>.
-    /// </summary>
-    /// <returns></returns>
-    [return: NotDefaultIfTypeParamsNonDefaultable(nameof(TLeft), nameof(TRight))]
-    public Type? GetWrappedType() => IsRight ? _right?.GetType() : _left?.GetType();
-    #endregion
-
-    #region ToString
-    /// <summary>
-    /// Gets a string that represents the current instance.
-    /// </summary>
-    /// <returns></returns>
-    public override string ToString()
-        => $"{nameof(Either)} {{ {(IsRight ? $"Right = {_right}" : $"Left = {_left}")} }}";
     #endregion
     #endregion
 }
