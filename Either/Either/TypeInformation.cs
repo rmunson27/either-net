@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,29 +10,30 @@ using System.Threading.Tasks;
 namespace Rem.Core.Utilities.Monads;
 
 /// <summary>
-/// Internal helper methods for determining if instances of type <typeparamref name="T"/> are the default.
+/// Internal static helper functionality describing information about type <typeparamref name="T"/> needed by
+/// this library.
 /// </summary>
-/// <remarks>
-/// This class will indicate that values of reference types are the default if they are <see langword="null"/>, that
-/// values of value types implementing <see cref="IDefaultableStruct"/> or the <see cref="ImmutableArray{T}"/> struct
-/// are the default if the <see cref="IDefaultableStruct.IsDefault"/> property returns <see langword="true"/>, and
-/// that values of all other value types are not the default.
-/// </remarks>
-/// <typeparam name="T"></typeparam>
-internal static class Defaults<T>
+/// <typeparam name="T">The type this class describes.</typeparam>
+internal static class TypeInformation<T>
 {
-    private static readonly DefaultabilityHelper<T> _helper = DefaultabilityHelper<T>.Create();
+    private static readonly DefaultabilityHelper<T> _defaultabilityHelper = DefaultabilityHelper<T>.Create();
 
     /// <summary>
-    /// Determines if the supplied instance of <typeparamref name="T"/> is the default, as according to the rules laid
-    /// out by this class's documentation.
+    /// Determines if the supplied instance of <typeparamref name="T"/> is the default value of its type.
     /// </summary>
+    /// <remarks>
+    /// This method will indicate that values of reference types are the default if they are <see langword="null"/>, that
+    /// values of value types implementing <see cref="IDefaultableStruct"/> or the <see cref="ImmutableArray{T}"/> struct
+    /// are the default if the <see cref="IDefaultableStruct.IsDefault"/> property returns <see langword="true"/>, and
+    /// that values of all other value types are not the default.
+    /// </remarks>
     /// <param name="value"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsDefault(T value) => _helper.IsDefault(value);
+    public static bool IsDefault(T value) => _defaultabilityHelper.IsDefault(value);
 }
 
+#region Defaultability Helpers
 internal sealed class ImmutableArrayDefaultabilityHelper<T> : DefaultabilityHelper<ImmutableArray<T>>
 {
     /// <inheritdoc/>
@@ -120,4 +119,5 @@ internal abstract class DefaultabilityHelper<T>
         }
     }
 }
+#endregion
 

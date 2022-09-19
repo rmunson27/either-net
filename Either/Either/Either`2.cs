@@ -18,7 +18,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
 {
     #region Properties And Fields
     /// <inheritdoc/>
-    public bool IsDefault => !IsRight && Defaults<TLeft>.IsDefault(_left);
+    public bool IsDefault => !IsRight && TypeInformation<TLeft>.IsDefault(_left);
 
     /// <summary>
     /// Gets the value wrapped in this instance typed as an <see cref="object"/>.
