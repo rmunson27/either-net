@@ -1,6 +1,4 @@
-using Rem.Core.Utilities.Either;
-
-namespace RemTest.Core.Utilities.Either;
+namespace RemTest.Core.Utilities.Monads;
 
 /// <summary>
 /// Tests of value-getters from the <see cref="Either{TLeft, TRight}"/> struct.

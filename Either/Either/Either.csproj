@@ -3,7 +3,7 @@
 	<PropertyGroup Label="Identity">
 		<Product>Rem.Core.Utilities.Either</Product>
 		<PackageId>Rem.Core.Utilities.Either</PackageId>
-		<RootNamespace>Rem.Core.Utilities.Either</RootNamespace>
+		<RootNamespace>Rem.Core.Utilities.Monads</RootNamespace>
 		<Version>1.0</Version>
 		<Description>
 			Provides a simple `Either` monad for .NET.

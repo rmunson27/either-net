@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rem.Core.Utilities.Either;
+namespace Rem.Core.Utilities.Monads;
 
 /// <summary>
 /// An exception thrown when an attempt is made to access an <see cref="Either{TLeft, TRight}"/> that is not wrapping

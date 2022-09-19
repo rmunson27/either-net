@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rem.Core.Utilities.Either;
+namespace Rem.Core.Utilities.Monads;
 
 /// <summary>
 /// Represents a single value of one of two possible types.
