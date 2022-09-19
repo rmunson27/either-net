@@ -145,6 +145,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     public static explicit operator TRight(Either<TLeft, TRight> either) => either.Right;
     #endregion
 
+    #region Linq-Like
     #region ToEnumerable
     /// <summary>
     /// Gets an <see cref="IEnumerable{T}"/> wrapping the right value wrapped in this instance, or an empty
@@ -240,6 +241,77 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     public Either<TLeft, TRightResult> SelectManyRight<TRightResult>(
         Func<TRight, Either<TLeft, TRightResult>> selector)
         => IsRight ? selector(_right) : new(_left);
+    #endregion
+
+    #region Where
+    #region IEnumerable (No Default Value)
+    /// <summary>
+    /// Filters the left side of this instance by a predicate.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    public IEnumerable<TLeft> WhereLeft(Func<TLeft, bool> predicate)
+    {
+        if (IsLeft && predicate(_left)) yield return _left;
+    }
+
+    /// <summary>
+    /// Filters the right side of this instance by a predicate.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    public IEnumerable<TRight> WhereRight(Func<TRight, bool> predicate)
+    {
+        if (IsRight && predicate(_right)) yield return _right;
+    }
+    #endregion
+
+    #region Either (Default Value)
+    #region Eager
+    /// <summary>
+    /// Filters the left side of this instance by a predicate, returning a new <see cref="Either{TLeft, TRight}"/>
+    /// with the specified default value on the right if the predicate fails.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public Either<TLeft, TRight> WhereLeft(Func<TLeft, bool> predicate, TRight defaultValue)
+        => IsRight ? this : (predicate(_left) ? this : new(defaultValue));
+
+    /// <summary>
+    /// Filters the right side of this instance by a predicate, returning a new <see cref="Either{TLeft, TRight}"/>
+    /// with the specified default value on the left if the predicate fails.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public Either<TLeft, TRight> WhereRight(Func<TRight, bool> predicate, TLeft defaultValue)
+        => IsRight ? (predicate(_right) ? this : new(defaultValue)) : this;
+    #endregion
+
+    #region Lazy
+    /// <summary>
+    /// Filters the right side of this instance by a predicate, returning a new <see cref="Either{TLeft, TRight}"/>
+    /// with the default value produced by the specified factory method on the left if the predicate fails.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <param name="defaultValueFactory"></param>
+    /// <returns></returns>
+    public Either<TLeft, TRight> WhereLeft(Func<TLeft, bool> predicate, Func<TRight> defaultValueFactory)
+        => IsRight ? this : (predicate(_left) ? this : new(defaultValueFactory()));
+
+    /// <summary>
+    /// Filters the right side of this instance by a predicate, returning a new <see cref="Either{TLeft, TRight}"/>
+    /// with the default value produced by the specified factory method on the left if the predicate fails.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <param name="defaultValueFactory"></param>
+    /// <returns></returns>
+    public Either<TLeft, TRight> WhereRight(Func<TRight, bool> predicate, Func<TLeft> defaultValueFactory)
+        => IsRight ? (predicate(_right) ? this : new(defaultValueFactory())) : this;
+    #endregion
+    #endregion
+    #endregion
     #endregion
 
     #region Factory
