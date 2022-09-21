@@ -105,6 +105,63 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     #endregion
 
     #region Methods
+    #region Containment
+    /// <summary>
+    /// Determines whether or not the current instance contains the supplied left value.
+    /// </summary>
+    /// <param name="value">The value to check for.</param>
+    /// <param name="comparer">
+    /// An <see cref="IEqualityComparer{T}"/> to use to check for equality, or <see langword="null"/> to use the
+    /// default comparer for type <typeparamref name="TRight"/>.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the current instance contains the supplied left value, or <see langword="false"/>
+    /// if this instance contains a different left value or is right.
+    /// </returns>
+    public bool ContainsLeft(TLeft value, IEqualityComparer<TLeft>? comparer = null)
+        => IsLeft && comparer.DefaultIfNull().Equals(_left, value);
+
+    /// <summary>
+    /// Determines whether or not the current instance contains -either- the left value passed in on the left -or- the
+    /// right value passed in on the right.
+    /// </summary>
+    /// <param name="left">The left value to check for.</param>
+    /// <param name="right">The right value to check for.</param>
+    /// <param name="leftComparer">
+    /// An <see cref="IEqualityComparer{T}"/> to use to check for <typeparamref name="TRight"/> equality, or
+    /// <see langword="null"/> to use the default comparer for type <typeparamref name="TRight"/>.
+    /// </param>
+    /// <param name="rightComparer">
+    /// An <see cref="IEqualityComparer{T}"/> to use to check for <typeparamref name="TLeft"/> equality, or
+    /// <see langword="null"/> to use the default comparer for type <typeparamref name="TLeft"/>.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the current instance contains the supplied left value or the supplied right value,
+    /// or <see langword="false"/> if it contains neither.
+    /// </returns>
+    public bool Contains(
+        TLeft left, TRight right,
+        IEqualityComparer<TLeft>? leftComparer = null, IEqualityComparer<TRight>? rightComparer = null)
+        => IsRight
+            ? rightComparer.DefaultIfNull().Equals(_right, right)
+            : leftComparer.DefaultIfNull().Equals(_left, left);
+
+    /// <summary>
+    /// Determines whether or not the current instance contains the supplied right value.
+    /// </summary>
+    /// <param name="value">The value to check for.</param>
+    /// <param name="comparer">
+    /// An <see cref="IEqualityComparer{T}"/> to use to check for equality, or <see langword="null"/> to use the
+    /// default comparer for type <typeparamref name="TRight"/>.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the current instance contains the supplied right value, or <see langword="false"/>
+    /// if this instance contains a different right value or is left.
+    /// </returns>
+    public bool ContainsRight(TRight value, IEqualityComparer<TRight>? comparer = null)
+        => IsRight && comparer.DefaultIfNull().Equals(_right, value);
+    #endregion
+
     #region Conversions
     #region CombineSides
     /// <summary>
@@ -147,7 +204,6 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     #endregion
     #endregion
 
-    #region Equality And Predicates
     #region Equality
     /// <summary>
     /// Determines if the current instance is equal to another object of the same type.
@@ -183,7 +239,6 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <returns></returns>
     public override int GetHashCode()
         => IsRight ? HashCode.Combine(true, _right) : HashCode.Combine(false, _left);
-    #endregion
     #endregion
 
     #region Factories
@@ -502,8 +557,43 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <typeparamref name="TLeft"/> and <typeparamref name="TRight"/> sides swapped.
     /// </summary>
     /// <returns></returns>
+    [InstanceNotDefault]
     public Either<TRight, TLeft> SwapSides() => new(_right, _left, !IsRight);
     #endregion
+    #endregion
+
+    #region Predicates
+    /// <summary>
+    /// Determines whether or not the current instance contains a left value that matches the specified predicate.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns>
+    /// <see langword="true"/> if the current instance wraps a left value that matches <paramref name="predicate"/>,
+    /// or <see langword="false"/> if this instance either contains a left value that does not match
+    /// <paramref name="predicate"/> or is right.
+    /// </returns>
+    public bool LeftMatches(Func<TLeft, bool> predicate) => IsLeft && predicate(_left);
+
+    /// <summary>
+    /// Determines whether or not the current instance comtains -either- a left value that matches the specified left
+    /// predicate -or- a right value that matches the specified right predicate.
+    /// </summary>
+    /// <param name="leftPredicate"></param>
+    /// <param name="rightPredicate"></param>
+    /// <returns></returns>
+    public bool Matches(Func<TLeft, bool> leftPredicate, Func<TRight, bool> rightPredicate)
+        => IsRight ? rightPredicate(_right) : leftPredicate(_left);
+
+    /// <summary>
+    /// Determines whether or not the current instance contains a right value that matches the specified predicate.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns>
+    /// <see langword="true"/> if the current instance wraps a right value that matches <paramref name="predicate"/>,
+    /// or <see langword="false"/> if this instance either contains a right value that does not match
+    /// <paramref name="predicate"/> or is left.
+    /// </returns>
+    public bool RightMatches(Func<TRight, bool> predicate) => IsRight && predicate(_right);
     #endregion
 
     #region ToString
