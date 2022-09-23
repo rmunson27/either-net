@@ -13,6 +13,7 @@ namespace RemTest.Core.Utilities.Monads;
 public class ApplicableTest
 {
     #region Tests
+    #region Apply
     /// <summary>
     /// Tests the <see cref="EitherApplicableExtensions.ApplyLeft"/> method and related generic overloads.
     /// </summary>
@@ -62,6 +63,82 @@ public class ApplicableTest
     }
     #endregion
 
+    #region Invoke
+    /// <summary>
+    /// Tests the <see cref="EitherApplicableExtensions.InvokeLeft"/> method and related generic overloads.
+    /// </summary>
+    [TestMethod]
+    public void TestInvokeLeft()
+    {
+        var testState = new ActionRunner();
+
+        // Should do nothing if the either is right (but not throw an exception)
+        Either<Action, string>.New("").InvokeLeft();
+        Either<Action<int>, string>.New("").InvokeLeft(2);
+        Either<Action<int, int>, string>.New("").InvokeLeft(2, 3);
+
+        // Should do nothing if the delegate is null (but not throw an exception)
+        Either<Action?, string>.NewLeft(null).InvokeLeft();
+        Either<Action<int>?, string>.NewLeft(null).InvokeLeft(1);
+        Either<Action<int, int>?, string>.NewLeft(null).InvokeLeft(1, 2);
+
+        // Should invoke the delegate
+        Either<Action, string>.New(testState.IncrementI).InvokeLeft();
+        Assert.AreEqual(1, testState.I);
+        Either<Action<int>, string>.New(testState.AddToI).InvokeLeft(2);
+        Assert.AreEqual(3, testState.I);
+        Either<Action<int, int>, string>.New(testState.AddQuotientToI).InvokeLeft(15, 3);
+        Assert.AreEqual(8, testState.I);
+    }
+
+    /// <summary>
+    /// Tests the <see cref="EitherApplicableExtensions.Invoke"/> method.
+    /// </summary>
+    [TestMethod]
+    public void TestInvoke()
+    {
+        var testState = new ActionRunner();
+
+        // Should do nothing if the delegate is null (but not throw an exception)
+        Either<Action?, Action?>.NewLeft(null).Invoke();
+        Either<Action?, Action?>.NewRight(null).Invoke();
+
+        // Should invoke the delegate
+        Either<Action, Action>.NewLeft(testState.IncrementI).Invoke();
+        Assert.AreEqual(1, testState.I);
+        Either<Action, Action>.NewRight(testState.IncrementI).Invoke();
+        Assert.AreEqual(2, testState.I);
+    }
+
+    /// <summary>
+    /// Tests the <see cref="EitherApplicableExtensions.InvokeRight"/> method and related generic overloads.
+    /// </summary>
+    [TestMethod]
+    public void TestInvokeRight()
+    {
+        var testState = new ActionRunner();
+
+        // Should do nothing if the either is right (but not throw an exception)
+        Either<string, Action>.New("").InvokeRight();
+        Either<string, Action<int>>.New("").InvokeRight(2);
+        Either<string, Action<int, int>>.New("").InvokeRight(2, 3);
+
+        // Should do nothing if the delegate is null (but not throw an exception)
+        Either<string, Action?>.NewRight(null).InvokeRight();
+        Either<string, Action<int>?>.NewRight(null).InvokeRight(1);
+        Either<string, Action<int, int>?>.NewRight(null).InvokeRight(1, 2);
+
+        // Should invoke the delegate
+        Either<string, Action>.New(testState.IncrementI).InvokeRight();
+        Assert.AreEqual(1, testState.I);
+        Either<string, Action<int>>.New(testState.AddToI).InvokeRight(2);
+        Assert.AreEqual(3, testState.I);
+        Either<string, Action<int, int>>.New(testState.AddQuotientToI).InvokeRight(15, 3);
+        Assert.AreEqual(8, testState.I);
+    }
+    #endregion
+    #endregion
+
     #region Helpers
     /// <summary>
     /// Gets the number 1.
@@ -95,5 +172,46 @@ public class ApplicableTest
     /// <param name="divisor"></param>
     /// <returns></returns>
     private static int Divide(int dividend, int divisor) => dividend / divisor;
+
+    /// <summary>
+    /// Stores an integer and a series of actions that can be used to modify it.
+    /// </summary>
+    /// <remarks>
+    /// This class is used internally to test the applicable methods.
+    /// </remarks>
+    private sealed class ActionRunner
+    {
+        /// <summary>
+        /// An integer stored by the <see cref="ActionRunner"/> class.
+        /// </summary>
+        public int I { get; private set; }
+
+        /// <summary>
+        /// Resets the state of this object to the default state (with <see cref="I"/> set to 0).
+        /// </summary>
+        public void Reset() { I = 0; }
+
+        /// <summary>
+        /// Increments <see cref="I"/>.
+        /// </summary>
+        public void IncrementI() => I++;
+
+        /// <summary>
+        /// Adds the specified integer to <see cref="I"/>.
+        /// </summary>
+        /// <param name="i"></param>
+        public void AddToI(int i) => I += i;
+
+        /// <summary>
+        /// Adds the quotient of the specified integers to <see cref="I"/>.
+        /// </summary>
+        /// <remarks>
+        /// A non-symmetric function was used <i>purposefully</i> to ensure the arguments are handled in the correct
+        /// order internally.
+        /// </remarks>
+        /// <param name="dividend"></param>
+        /// <param name="divisor"></param>
+        public void AddQuotientToI(int dividend, int divisor) => I += dividend / divisor;
+    }
     #endregion
 }

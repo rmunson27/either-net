@@ -100,6 +100,50 @@ public static class {TypeName}
     public static Either<TLeft, TRightResult> ApplyRight<TLeft, TRightResult>(
         this Either<TLeft, Func<TRightResult>> either)
         => either.IsRight ? new(either._right()) : new(either._left);
+
+    /// <summary>
+    /// Calls the function on the left side of the current instance.
+    /// </summary>
+    /// <typeparam name=""TRight"">The type of the right side.</typeparam>
+    /// <param name=""either""></param>
+    public static void InvokeLeft<TRight>(
+        this Either<
+#nullable disable
+            Action,
+#nullable enable
+            TRight> either)
+    {
+        if (either.IsLeft) either._left?.Invoke();
+    }
+
+    /// <summary>
+    /// Calls the function wrapped in the current instance.
+    /// </summary>
+    /// <param name=""either""></param>
+    public static void Invoke(
+#nullable disable
+        this Either<Action, Action> either)
+#nullable enable
+    {
+        if (either.IsRight) either._right?.Invoke();
+        else either._left?.Invoke();
+    }
+
+    /// <summary>
+    /// Calls the function on the right side of the current instance.
+    /// </summary>
+    /// <typeparam name=""TLeft"">The type of the left side.</typeparam>
+    /// <param name=""either""></param>
+    public static void InvokeRight<TLeft>(
+        this Either<
+                TLeft,
+#nullable disable
+                Action
+#nullable enable
+            > either)
+    {
+        if (either.IsRight) either._right?.Invoke();
+    }
 ";
 
     private static string GetSingleArgMethodsString()
@@ -129,31 +173,69 @@ public static class {TypeName}
     public static Either<TLeft, TRightResult> ApplyRight<TLeft, TArg, TRightResult>(
         this Either<TLeft, Func<TArg, TRightResult>> either, TArg arg)
         => either.IsRight ? new(either._right(arg)) : new(either._left);
+
+    /// <summary>
+    /// Calls the function on the left side of the current instance on the supplied argument.
+    /// </summary>
+    /// <typeparam name=""TArg"">The type of the argument of the left side.</typeparam>
+    /// <typeparam name=""TRight"">The type of the right side.</typeparam>
+    /// <param name=""either""></param>
+    /// <param name=""arg"">The argument to call the left side on.</param>
+    public static void InvokeLeft<TArg, TRight>(
+        this Either<
+                Action<TArg
+#nullable disable
+                    >,
+#nullable enable
+                TRight> either,
+        TArg arg)
+    {
+        if (either.IsLeft) either._left?.Invoke(arg);
+    }
+
+    /// <summary>
+    /// Calls the function on the right side of the current instance on the supplied argument.
+    /// </summary>
+    /// <typeparam name=""TLeft"">The type of the left side.</typeparam>
+    /// <typeparam name=""TArg"">The type of the argument of the right side.</typeparam>
+    /// <param name=""either""></param>
+    /// <param name=""arg"">The argument to call the right side on.</param>
+    public static void InvokeRight<TLeft, TArg>(
+        this Either<
+                TLeft,
+                Action<TArg
+#nullable disable
+                    >
+#nullable enable
+            > either, TArg arg)
+    {
+        if (either.IsRight) either._right?.Invoke(arg);
+    }
 ";
 
     private static string GetMultipleArgMethodsString(int argCount)
     {
         #region Static Helpers
-        static string FuncArgTypeName(int number) => $"TArg{number}";
+        static string delegateArgTypeName(int number) => $"TArg{number}";
 
-        static string FuncArgName(int number) => $"arg{number}";
+        static string delegateArgName(int number) => $"arg{number}";
         #endregion
 
         #region Setup
         var argNumberRange = Enumerable.Range(1, argCount);
 
-        var funcArgTypeList = argNumberRange.Select(FuncArgTypeName);
+        var delegateArgTypeList = argNumberRange.Select(delegateArgTypeName);
 
-        var funcArgNameList = argNumberRange.Select(FuncArgName);
+        var delegateArgNameList = argNumberRange.Select(delegateArgName);
 
-        var funcArgTypeListStr = string.Join(", ", funcArgTypeList);
+        var delegateArgTypeListStr = string.Join(", ", delegateArgTypeList);
 
-        var funcArgNameListStr = string.Join(", ", funcArgNameList);
+        var delegateArgNameListStr = string.Join(", ", delegateArgNameList);
 
-        string FuncArgTypeDocsStr(EitherSide side)
+        string delegateArgTypeDocsStr(EitherSide side)
             => string.Join(
                 Environment.NewLine,
-                funcArgTypeList.Zip(
+                delegateArgTypeList.Zip(
                     argNumberRange,
                     (tStr, i)
                         => "    /// "
@@ -162,10 +244,10 @@ public static class {TypeName}
                                 $"The type of the {i.FormatAsOrdinal()} argument of the"
                                     + $" {side.ToString().ToLower()} side.")));
 
-        string FuncArgDocsStr(EitherSide side)
+        string delegateArgDocsStr(EitherSide side)
             => string.Join(
                 Environment.NewLine,
-                funcArgNameList.Zip(
+                delegateArgNameList.Zip(
                     argNumberRange,
                     (pName, i)
                         => "    /// "
@@ -174,46 +256,107 @@ public static class {TypeName}
                                 $"The {i.FormatAsOrdinal()} argument to apply the"
                                     + $" {side.ToString().ToLower()} side to.")));
 
-        string EitherTypeStr(EitherSide side)
+        string funcTypeStr(EitherSide side) => $"Func<{delegateArgTypeListStr}, {FuncResultTypeStr(side)}>";
+
+        string funcEitherTypeStr(EitherSide side)
             => side == EitherSide.Left
-                ? $"Either<{FuncTypeStr(EitherSide.Left)}, TRight>"
-                : $"Either<TLeft, {FuncTypeStr(EitherSide.Right)}>";
+                ? $"Either<{funcTypeStr(EitherSide.Left)}, TRight>"
+                : $"Either<TLeft, {funcTypeStr(EitherSide.Right)}>";
 
-        string ArgDeclarationsListStr(EitherSide side)
-            => $"this {EitherTypeStr(side)} either, "
-                + string.Join(", ", funcArgTypeList.Zip(funcArgNameList, (type, name) => $"{type} {name}"));
+        string actionEitherTypeStr(EitherSide side)
+            => side == EitherSide.Left
+                ? $@"Either<
+                Action<{delegateArgTypeListStr}
+#nullable disable
+                    >,
+#nullable enable
+                TRight>"
+                : $@"Either<
+                TLeft,
+                Action<{delegateArgTypeListStr}
+#nullable disable
+                    >
+#nullable enable
+                >";
 
-        string FuncTypeStr(EitherSide side) => $"Func<{funcArgTypeListStr}, {FuncResultTypeStr(side)}>";
+        var funcArgDeclarationsListStr
+            = string.Join(", ", delegateArgTypeList.Zip(delegateArgNameList, (type, name) => $"{type} {name}"));
+
+        string funcMethodArgDeclarationsListStr(EitherSide side)
+            => $"this {funcEitherTypeStr(side)} either, {funcArgDeclarationsListStr}";
+
+        string actionMethodArgDeclarationsListStr(EitherSide side)
+            => $"this {actionEitherTypeStr(side)} either, {funcArgDeclarationsListStr}";
         #endregion
 
         return $@"
     /// <summary>
     /// Applies the function on the left side of the current instance to the arguments passed in.
     /// </summary>
-{FuncArgTypeDocsStr(EitherSide.Left)}
+{delegateArgTypeDocsStr(EitherSide.Left)}
     /// <typeparam name=""TLeftResult"">The return type of the left side.</typeparam>
     /// <typeparam name=""TRight"">The type of the right side.</typeparam>
     /// <param name=""either""></param>
-{FuncArgDocsStr(EitherSide.Left)}
+{delegateArgDocsStr(EitherSide.Left)}
     /// <returns></returns>
-    public static Either<TLeftResult, TRight> ApplyLeft<{funcArgTypeListStr}, TLeftResult, TRight>(
-        {ArgDeclarationsListStr(EitherSide.Left)})
-        => either.IsRight ? new(either._right) : new(either._left({funcArgNameListStr}));
+    public static Either<TLeftResult, TRight> ApplyLeft<{delegateArgTypeListStr}, TLeftResult, TRight>(
+        {funcMethodArgDeclarationsListStr(EitherSide.Left)})
+        => either.IsRight ? new(either._right) : new(either._left({delegateArgNameListStr}));
 
     /// <summary>
     /// Applies the function on the right side of the current instance to the arguments passed in.
     /// </summary>
     /// <typeparam name=""TLeft"">The type of the left side.</typeparam>
-{FuncArgTypeDocsStr(EitherSide.Right)}
+{delegateArgTypeDocsStr(EitherSide.Right)}
     /// <typeparam name=""TRightResult"">The return type of the right side.</typeparam>
     /// <param name=""either""></param>
-{FuncArgDocsStr(EitherSide.Right)}
+{delegateArgDocsStr(EitherSide.Right)}
     /// <returns></returns>
-    public static Either<TLeft, TRightResult> ApplyRight<TLeft, {funcArgTypeListStr}, TRightResult>(
-        {ArgDeclarationsListStr(EitherSide.Right)})
-        => either.IsRight ? new(either._right({funcArgNameListStr})) : new(either._left);
+    public static Either<TLeft, TRightResult> ApplyRight<TLeft, {delegateArgTypeListStr}, TRightResult>(
+        {funcMethodArgDeclarationsListStr(EitherSide.Right)})
+        => either.IsRight ? new(either._right({delegateArgNameListStr})) : new(either._left);
+
+    /// <summary>
+    /// Calls the function on the left side of the current instance on the arguments passed in.
+    /// </summary>
+{delegateArgTypeDocsStr(EitherSide.Left)}
+    /// <typeparam name=""TRight"">The type of the right side.</typeparam>
+    /// <param name=""either""></param>
+{delegateArgDocsStr(EitherSide.Left)}
+    public static void InvokeLeft<{delegateArgTypeListStr}, TRight>(
+        {actionMethodArgDeclarationsListStr(EitherSide.Left)})
+    {{
+        if (either.IsLeft) either._left?.Invoke({delegateArgNameListStr});
+    }}
+
+    /// <summary>
+    /// Calls the function on the right side of the current instance on the arguments passed in.
+    /// </summary>
+    /// <typeparam name=""TLeft"">The type of the left side.</typeparam>
+{delegateArgTypeDocsStr(EitherSide.Right)}
+    /// <param name=""either""></param>
+{delegateArgDocsStr(EitherSide.Right)}
+    public static void InvokeRight<TLeft, {delegateArgTypeListStr}>(
+        {actionMethodArgDeclarationsListStr(EitherSide.Right)})
+    {{
+        if (either.IsRight) either._right?.Invoke({delegateArgNameListStr});
+    }}
 ";
     }
+
+    private static string LeftActionEitherExtensionTypeStr(string actionTypeStr) =>
+$@"        this Either<
+#nullable disable
+                {actionTypeStr},
+#nullable enable
+                TRight>";
+
+    private static string RightActionEitherExtensionTypeStr(string actionTypeStr) =>
+$@"        this Either<
+                TLeft,
+#nullable disable
+                {actionTypeStr}>
+#nullable enable";
 
     private static string FuncResultTypeStr(EitherSide side)
         => side == EitherSide.Left ? "TLeftResult" : "TRightResult";
