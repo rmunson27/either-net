@@ -33,6 +33,16 @@ public class ApplicableTest
     }
 
     /// <summary>
+    /// Tests the <see cref="EitherApplicableExtensions.Apply"/> method.
+    /// </summary>
+    [TestMethod]
+    public void TestApply()
+    {
+        Assert.That.HasLeft(1, Either<Func<int>, Func<int>>.NewLeft(GetOne).Apply());
+        Assert.That.HasRight(1, Either<Func<int>, Func<int>>.NewRight(GetOne).Apply());
+    }
+
+    /// <summary>
     /// Tests the <see cref="EitherApplicableExtensions.ApplyRight"/> method and related generic overloads.
     /// </summary>
     [TestMethod]

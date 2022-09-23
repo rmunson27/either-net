@@ -80,6 +80,17 @@ public static class {TypeName}
         => either.IsRight ? new(either._right) : new(either._left());
 
     /// <summary>
+    /// Calls the function wrapped in the current instance.
+    /// </summary>
+    /// <typeparam name=""TLeftResult"">The return type of the left side.</typeparam>
+    /// <typeparam name=""TRightResult"">The return type of the right side.</typeparam>
+    /// <param name=""either""></param>
+    /// <returns></returns>
+    public static Either<TLeftResult, TRightResult> Apply<TLeftResult, TRightResult>(
+        this Either<Func<TLeftResult>, Func<TRightResult>> either)
+        => either.IsRight ? new(either._right()) : new(either._left());
+
+    /// <summary>
     /// Calls the function on the right side of the current instance.
     /// </summary>
     /// <typeparam name=""TLeft"">The type of the left side.</typeparam>
