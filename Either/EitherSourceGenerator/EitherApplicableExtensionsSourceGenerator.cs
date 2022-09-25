@@ -26,6 +26,7 @@ public class EitherApplicableExtensionsSourceGenerator : ISourceGenerator
 
 #nullable enable
 
+using Rem.Core.Attributes;
 using System;
 
 namespace {Namespace};
@@ -76,7 +77,7 @@ public static class {TypeName}
     /// <param name=""either""></param>
     /// <returns></returns>
     public static Either<TLeftResult, TRight> ApplyLeft<TLeftResult, TRight>(
-        this Either<Func<TLeftResult>, TRight> either)
+        [NonDefaultableStruct] this Either<Func<TLeftResult>, TRight> either)
         => either.IsRight ? new(either._right) : new(either._left());
 
     /// <summary>
@@ -87,7 +88,7 @@ public static class {TypeName}
     /// <param name=""either""></param>
     /// <returns></returns>
     public static Either<TLeftResult, TRightResult> Apply<TLeftResult, TRightResult>(
-        this Either<Func<TLeftResult>, Func<TRightResult>> either)
+        [NonDefaultableStruct] this Either<Func<TLeftResult>, Func<TRightResult>> either)
         => either.IsRight ? new(either._right()) : new(either._left());
 
     /// <summary>
@@ -97,6 +98,7 @@ public static class {TypeName}
     /// <typeparam name=""TRightResult"">The return type of the right side.</typeparam>
     /// <param name=""either""></param>
     /// <returns></returns>
+    [return: NotDefaultIfNotDefault(""either"")]
     public static Either<TLeft, TRightResult> ApplyRight<TLeft, TRightResult>(
         this Either<TLeft, Func<TRightResult>> either)
         => either.IsRight ? new(either._right()) : new(either._left);
@@ -158,7 +160,7 @@ public static class {TypeName}
     /// <param name=""arg"">The argument to apply the left side to.</param>
     /// <returns></returns>
     public static Either<TLeftResult, TRight> ApplyLeft<TArg, TLeftResult, TRight>(
-        this Either<Func<TArg, TLeftResult>, TRight> either, TArg arg)
+        [NonDefaultableStruct] this Either<Func<TArg, TLeftResult>, TRight> either, TArg arg)
         => either.IsRight ? new(either._right) : new(either._left(arg));
 
     /// <summary>
@@ -170,6 +172,7 @@ public static class {TypeName}
     /// <param name=""either""></param>
     /// <param name=""arg"">The argument to apply the right side to.</param>
     /// <returns></returns>
+    [return: NotDefaultIfNotDefault(""either"")]
     public static Either<TLeft, TRightResult> ApplyRight<TLeft, TArg, TRightResult>(
         this Either<TLeft, Func<TArg, TRightResult>> either, TArg arg)
         => either.IsRight ? new(either._right(arg)) : new(either._left);
@@ -300,7 +303,7 @@ public static class {TypeName}
 {delegateArgDocsStr(EitherSide.Left)}
     /// <returns></returns>
     public static Either<TLeftResult, TRight> ApplyLeft<{delegateArgTypeListStr}, TLeftResult, TRight>(
-        {funcMethodArgDeclarationsListStr(EitherSide.Left)})
+        [NonDefaultableStruct] {funcMethodArgDeclarationsListStr(EitherSide.Left)})
         => either.IsRight ? new(either._right) : new(either._left({delegateArgNameListStr}));
 
     /// <summary>
@@ -312,6 +315,7 @@ public static class {TypeName}
     /// <param name=""either""></param>
 {delegateArgDocsStr(EitherSide.Right)}
     /// <returns></returns>
+    [return: NotDefaultIfNotDefault(""either"")]
     public static Either<TLeft, TRightResult> ApplyRight<TLeft, {delegateArgTypeListStr}, TRightResult>(
         {funcMethodArgDeclarationsListStr(EitherSide.Right)})
         => either.IsRight ? new(either._right({delegateArgNameListStr})) : new(either._left);

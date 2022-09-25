@@ -29,7 +29,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <summary>
     /// Gets the value wrapped in this instance typed as an <see cref="object"/>.
     /// </summary>
-    [NotDefaultIfTypeParamsNonDefaultable(nameof(TLeft), nameof(TRight))]
+    [NotDefaultIfTypeParamsNonNullable(nameof(TLeft), nameof(TRight))]
     public object? Value => IsRight ? _right : _left;
 
     /// <summary>
@@ -171,6 +171,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="leftCombiner"></param>
     /// <param name="rightCombiner"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public TResult CombineSides<TResult>(Func<TLeft, TResult> leftCombiner, Func<TRight, TResult> rightCombiner)
         => IsRight ? rightCombiner(_right) : leftCombiner(_left);
     #endregion
@@ -193,6 +194,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// </summary>
     /// <param name="either"></param>
     /// <exception cref="EitherException">The either was right.</exception>
+    [return: MaybeDefaultIfInstanceDefault]
     public static explicit operator TLeft(Either<TLeft, TRight> either) => either.Left;
     
     /// <summary>
@@ -282,7 +284,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <see langword="null"/>.
     /// </summary>
     /// <returns></returns>
-    [return: NotDefaultIfTypeParamsNonDefaultable(nameof(TLeft), nameof(TRight))]
+    [return: NotDefaultIfTypeParamsNonNullable(nameof(TLeft), nameof(TRight))]
     public Type? GetWrappedType() => IsRight ? _right?.GetType() : _left?.GetType();
     #endregion
 
@@ -339,6 +341,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <typeparam name="TLeftResult"></typeparam>
     /// <param name="selector"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public Either<TLeftResult, TRight> SelectLeft<TLeftResult>(Func<TLeft, TLeftResult> selector)
         => IsRight ? new(_right) : new(selector(_left));
 
@@ -350,6 +353,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="leftSelector"></param>
     /// <param name="rightSelector"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public Either<TLeftResult, TRightResult> Select<TLeftResult, TRightResult>(
         Func<TLeft, TLeftResult> leftSelector, Func<TRight, TRightResult> rightSelector)
         => IsRight ? new(rightSelector(_right)) : new(leftSelector(_left));
@@ -371,6 +375,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <typeparam name="TLeftResult"></typeparam>
     /// <param name="selector"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public Either<TLeftResult, TRight> SelectManyLeft<TLeftResult>(Func<TLeft, Either<TLeftResult, TRight>> selector)
         => IsRight ? new(_right) : selector(_left);
 
@@ -382,6 +387,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="leftSelector"></param>
     /// <param name="rightSelector"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public Either<TLeftResult, TRightResult> SelectMany<TLeftResult, TRightResult>(
         Func<TLeft, Either<TLeftResult, TRightResult>> leftSelector,
         Func<TRight, Either<TLeftResult, TRightResult>> rightSelector)
@@ -413,6 +419,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// Gets an <see cref="IEnumerable"/> wrapping the value wrapped in this instance.
     /// </summary>
     /// <returns></returns>
+    [InstanceNotDefault]
     public IEnumerable Enumerate()
     {
         yield return IsRight ? _right : _left;
@@ -423,6 +430,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <see cref="IEnumerable{T}"/> if this instance is right.
     /// </summary>
     /// <returns></returns>
+    [InstanceNotDefault]
     public IEnumerable<TLeft> EnumerateLeft()
     {
         if (IsLeft) yield return _left;
@@ -436,6 +444,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// </summary>
     /// <param name="predicate"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public IEnumerable<TLeft> WhereLeft(Func<TLeft, bool> predicate)
     {
         if (IsLeft && predicate(_left)) yield return _left;
@@ -461,6 +470,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="predicate"></param>
     /// <param name="defaultValue"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public Either<TLeft, TRight> WhereLeft(Func<TLeft, bool> predicate, TRight defaultValue)
         => IsRight ? this : (predicate(_left) ? this : new(defaultValue));
 
@@ -483,6 +493,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="predicate"></param>
     /// <param name="defaultValueFactory"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public Either<TLeft, TRight> WhereLeft(Func<TLeft, bool> predicate, Func<TRight> defaultValueFactory)
         => IsRight ? this : (predicate(_left) ? this : new(defaultValueFactory()));
 
@@ -572,6 +583,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// or <see langword="false"/> if this instance either contains a left value that does not match
     /// <paramref name="predicate"/> or is right.
     /// </returns>
+    [InstanceNotDefault]
     public bool LeftMatches(Func<TLeft, bool> predicate) => IsLeft && predicate(_left);
 
     /// <summary>
@@ -581,6 +593,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="leftPredicate"></param>
     /// <param name="rightPredicate"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public bool Matches(Func<TLeft, bool> leftPredicate, Func<TRight, bool> rightPredicate)
         => IsRight ? rightPredicate(_right) : leftPredicate(_left);
 
