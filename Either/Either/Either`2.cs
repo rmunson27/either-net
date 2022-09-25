@@ -487,13 +487,20 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
         => IsRight ? selector(_right) : new(_left);
     #endregion
 
-    #region ToEnumerable
+    #region Enumerator / Enumerable
     /// <summary>
     /// Gets an <see cref="IEnumerable{T}"/> wrapping the right value wrapped in this instance, or an empty
     /// <see cref="IEnumerable{T}"/> if this instance is left.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<TRight> EnumerateRight()
+    public IEnumerable<TRight> EnumerateRight() => (IEnumerable<TRight>)GetRightEnumerator();
+
+    /// <summary>
+    /// Gets an <see cref="IEnumerator{T}"/> that enumerates the right value wrapped in this instance, or an empty
+    /// <see cref="IEnumerator{T}"/> if this instance is left.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerator<TRight> GetRightEnumerator()
     {
         if (IsRight) yield return _right;
     }
@@ -503,7 +510,14 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// </summary>
     /// <returns></returns>
     [InstanceNotDefault]
-    public IEnumerable Enumerate()
+    public IEnumerable Enumerate() => (IEnumerable)GetNonGenericEnumerator();
+
+    /// <summary>
+    /// Gets an <see cref="IEnumerator"/> enumerating the value wrapped in this instance.
+    /// </summary>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public IEnumerator GetNonGenericEnumerator()
     {
         yield return IsRight ? _right : _left;
     }
@@ -514,7 +528,15 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// </summary>
     /// <returns></returns>
     [InstanceNotDefault]
-    public IEnumerable<TLeft> EnumerateLeft()
+    public IEnumerable<TLeft> EnumerateLeft() => (IEnumerable<TLeft>)GetLeftEnumerator();
+
+    /// <summary>
+    /// Gets an <see cref="IEnumerator{T}"/> that enumerates the left value wrapped in this instance, or an empty
+    /// <see cref="IEnumerator{T}"/> if this instance is right.
+    /// </summary>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public IEnumerator<TLeft> GetLeftEnumerator()
     {
         if (IsLeft) yield return _left;
     }
