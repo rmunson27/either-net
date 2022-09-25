@@ -52,6 +52,20 @@ public class WhereTest
     }
     #endregion
 
+    #region Either Side
+    /// <summary>
+    /// Tests the <see cref="Either{TLeft, TRight}.Where(Func{TLeft, bool}, Func{TRight, bool})"/> method.
+    /// </summary>
+    [TestMethod]
+    public void TestWhere_Enumerable()
+    {
+        Assert.That.SequenceEqual(new[] { 2 }, Either<string, int>.New(2).Where(LengthIsEven, IsEven));
+        Assert.IsFalse(Either<string, int>.New(3).Where(LengthIsEven, IsEven).Cast<object>().Any());
+        Assert.That.SequenceEqual(new[] { "" }, Either<string, int>.New("").Where(LengthIsEven, IsEven));
+        Assert.IsFalse(Either<string, int>.New(" ").Where(LengthIsEven, IsEven).Cast<object>().Any());
+    }
+    #endregion
+
     #region Right
     /// <summary>
     /// Tests the <see cref="Either{TLeft, TRight}.WhereRight(Func{TRight, bool})"/> method.
@@ -93,10 +107,23 @@ public class WhereTest
 
     #region Helpers
     /// <summary>
-    /// A helper predicate used to test the methods.
+    /// Determines if the given integer is even.
     /// </summary>
+    /// <remarks>
+    /// This predicate is used internally to test the methods.
+    /// </remarks>
     /// <param name="i"></param>
     /// <returns></returns>
     private static bool IsEven(int i) => i % 2 == 0;
+
+    /// <summary>
+    /// Determines if the length of the given string is even.
+    /// </summary>
+    /// <remarks>
+    /// This predicate is used internally to test the methods.
+    /// </remarks>
+    /// <param name="s"></param>
+    /// <returns></returns>
+    private static bool LengthIsEven(string s) => s.Length % 2 == 0;
     #endregion
 }
