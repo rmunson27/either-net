@@ -25,7 +25,7 @@ public static class Either
         /// <typeparam name="TRight"></typeparam>
         /// <param name="either"></param>
         /// <returns></returns>
-        public static T FromChild<TLeft, TRight>(Either<TLeft, TRight> either)
+        public static T FromChild<TLeft, TRight>(in Either<TLeft, TRight> either)
             where TLeft : T
             where TRight : T
             => either.IsRight ? either._right : either._left;
