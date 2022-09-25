@@ -348,20 +348,6 @@ public static class {TypeName}
 ";
     }
 
-    private static string LeftActionEitherExtensionTypeStr(string actionTypeStr) =>
-$@"        this Either<
-#nullable disable
-                {actionTypeStr},
-#nullable enable
-                TRight>";
-
-    private static string RightActionEitherExtensionTypeStr(string actionTypeStr) =>
-$@"        this Either<
-                TLeft,
-#nullable disable
-                {actionTypeStr}>
-#nullable enable";
-
     private static string FuncResultTypeStr(EitherSide side)
         => side == EitherSide.Left ? "TLeftResult" : "TRightResult";
 
