@@ -204,6 +204,89 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <exception cref="EitherException">The either was left.</exception>
     public static explicit operator TRight(Either<TLeft, TRight> either) => either.Right;
     #endregion
+
+    #region Polymorphism
+    #region Up Casts
+    /// <summary>
+    /// Converts the left (<typeparamref name="TLeftChild"/>) type of the <see cref="Either{TLeft, TRight}"/> passed in
+    /// to <typeparamref name="TLeft"/>.
+    /// </summary>
+    /// <typeparam name="TChild"></typeparam>
+    /// <typeparam name="TRight"></typeparam>
+    /// <param name="either"></param>
+    /// <returns></returns>
+    [return: NotDefaultIfNotDefault("either")]
+    public static Either<TLeft, TRight> FromLeftChild<TLeftChild>(in Either<TLeftChild, TRight> either)
+        where TLeftChild : TLeft
+        => new(either._left, either._right, either.IsRight);
+
+    /// <summary>
+    /// Converts the left (<typeparamref name="TLeftChild"/>) and right (<typeparamref name="TRightChild"/>) types of
+    /// the <see cref="Either{TLeft, TRight}"/> passed in to <typeparamref name="TLeft"/> and
+    /// <typeparamref name="TRight"/>, respectively.
+    /// </summary>
+    /// <typeparam name="TLeftChild"></typeparam>
+    /// <typeparam name="TRightChild"></typeparam>
+    /// <param name="either"></param>
+    /// <returns></returns>
+    [return: NotDefaultIfNotDefault("either")]
+    public static Either<TLeft, TRight> FromChild<TLeftChild, TRightChild>(in Either<TLeftChild, TRightChild> either)
+        where TLeftChild : TLeft
+        where TRightChild : TRight
+        => new(either._left, either._right, either.IsRight);
+
+    /// <summary>
+    /// Converts the right (<typeparamref name="TRightChild"/>) type of the <see cref="Either{TLeft, TRight}"/> passed in
+    /// to <typeparamref name="TRight"/>.
+    /// </summary>
+    /// <typeparam name="TChild"></typeparam>
+    /// <typeparam name="TRight"></typeparam>
+    /// <param name="either"></param>
+    /// <returns></returns>
+    [return: NotDefaultIfNotDefault("either")]
+    public static Either<TLeft, TRight> FromRightChild<TRightChild>(in Either<TLeft, TRightChild> either)
+        where TRightChild : TRight
+        => new(either._left, either._right, either.IsRight);
+    #endregion
+
+    #region Down Casts
+    /// <summary>
+    /// Casts the left type of the current instance to <typeparamref name="TLeftChild"/>.
+    /// </summary>
+    /// <typeparam name="TLeftChild"></typeparam>
+    /// <returns></returns>
+    /// <exception cref="InvalidCastException">The cast was invalid.</exception>
+    [return: MaybeDefaultIfInstanceDefault]
+    public Either<TLeftChild, TRight> CastToLeftChild<TLeftChild>()
+        where TLeftChild : TLeft
+        => IsRight ? new(_right) : new((TLeftChild)_left!);
+
+    /// <summary>
+    /// Casts the left type of the current instance to <typeparamref name="TLeftChild"/> and the right type of the
+    /// current instance to <typeparamref name="TRightChild"/>.
+    /// </summary>
+    /// <typeparam name="TLeftChild"></typeparam>
+    /// <typeparam name="TRightChild"></typeparam>
+    /// <returns></returns>
+    /// <exception cref="InvalidCastException">The cast was invalid.</exception>
+    [return: MaybeDefaultIfInstanceDefault]
+    public Either<TLeftChild, TRightChild> CastToChild<TLeftChild, TRightChild>()
+        where TLeftChild : TLeft
+        where TRightChild : TRight
+        => IsRight ? new((TRightChild)_right!) : new((TLeftChild)_left!);
+
+    /// <summary>
+    /// Casts the right type of the current instance to <typeparamref name="TRightChild"/>.
+    /// </summary>
+    /// <typeparam name="TRightChild"></typeparam>
+    /// <returns></returns>
+    /// <exception cref="InvalidCastException">The cast was invalid.</exception>
+    [return: MaybeDefaultIfInstanceDefault]
+    public Either<TLeft, TRightChild> CastToRightChild<TRightChild>()
+        where TRightChild : TRight
+        => IsRight ? new((TRightChild)_right!) : new(_left);
+    #endregion
+    #endregion
     #endregion
 
     #region Equality

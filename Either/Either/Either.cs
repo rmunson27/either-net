@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rem.Core.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,7 +26,7 @@ public static class Either
         /// <typeparam name="TRight"></typeparam>
         /// <param name="either"></param>
         /// <returns></returns>
-        public static T FromChild<TLeft, TRight>(in Either<TLeft, TRight> either)
+        public static T UnwrapChild<TLeft, TRight>(in Either<TLeft, TRight> either)
             where TLeft : T
             where TRight : T
             => either.IsRight ? either._right : either._left;
@@ -44,6 +45,19 @@ public static class Either
         /// <param name="Value"></param>
         /// <returns></returns>
         public static Either<T, TRight> Right<TRight>(TRight Value) => new(Value);
+
+        /// <summary>
+        /// Converts the <typeparamref name="TChild"/> left type of the <see cref="Either{TLeft, TRight}"/> passed in
+        /// to <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="TChild"></typeparam>
+        /// <typeparam name="TRight"></typeparam>
+        /// <param name="either"></param>
+        /// <returns></returns>
+        [return: NotDefaultIfNotDefault("either")]
+        public static Either<T, TRight> FromChild<TChild, TRight>(in Either<TChild, TRight> either)
+            where TChild : T
+            => Either<T, TRight>.FromLeftChild(in either);
     }
 
     /// <summary>
@@ -59,5 +73,18 @@ public static class Either
         /// <param name="Value"></param>
         /// <returns></returns>
         public static Either<TLeft, T> Left<TLeft>(TLeft Value) => new(Value);
+
+        /// <summary>
+        /// Converts the <typeparamref name="TChild"/> right type of the <see cref="Either{TLeft, TRight}"/> passed in
+        /// to <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="TLeft"></typeparam>
+        /// <typeparam name="TChild"></typeparam>
+        /// <param name="either"></param>
+        /// <returns></returns>
+        [return: NotDefaultIfNotDefault("either")]
+        public static Either<TLeft, T> FromChild<TLeft, TChild>(in Either<TLeft, TChild> either)
+            where TChild : T
+            => Either<TLeft, T>.FromRightChild(in either);
     }
 }
