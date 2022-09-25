@@ -480,7 +480,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <summary>
     /// Maps a selector over the right side of this instance.
     /// </summary>
-    /// <typeparam name="TLeftResult"></typeparam>
+    /// <typeparam name="TRightResult"></typeparam>
     /// <param name="selector"></param>
     /// <returns></returns>
     [return: MaybeDefaultIfInstanceDefault]
