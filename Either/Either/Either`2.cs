@@ -447,6 +447,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <typeparam name="TRightResult"></typeparam>
     /// <param name="selector"></param>
     /// <returns></returns>
+    [return: MaybeDefaultIfInstanceDefault]
     public Either<TLeft, TRightResult> SelectRight<TRightResult>(Func<TRight, TRightResult> selector)
         => IsRight ? new(selector(_right)) : new(_left);
     #endregion
@@ -482,6 +483,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <typeparam name="TLeftResult"></typeparam>
     /// <param name="selector"></param>
     /// <returns></returns>
+    [return: MaybeDefaultIfInstanceDefault]
     public Either<TLeft, TRightResult> SelectManyRight<TRightResult>(
         Func<TRight, Either<TLeft, TRightResult>> selector)
         => IsRight ? selector(_right) : new(_left);
