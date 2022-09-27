@@ -418,6 +418,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
 
     #region Linq-Like
     #region Select
+    #region Synchronous
     /// <summary>
     /// Maps a selector over the left side of this instance.
     /// </summary>
@@ -450,6 +451,184 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     [return: MaybeDefaultIfInstanceDefault]
     public Either<TLeft, TRightResult> SelectRight<TRightResult>(Func<TRight, TRightResult> selector)
         => IsRight ? new(selector(_right)) : new(_left);
+    #endregion
+
+    #region Asyncronous
+    #region Left
+    /// <summary>
+    /// Asynchronously maps a selector over the left side of this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <param name="selector"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeftResult, TRight>> SelectLeftAsync<TLeftResult>(
+        Func<TLeft, Task<TLeftResult>> selector)
+        => IsRight ? new(_right) : new(await selector(_left));
+
+    /// <summary>
+    /// Asynchronously maps a selector over the left side of this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <param name="selector"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeftResult, TRight>> SelectLeftAsync<TLeftResult>(
+        Func<TLeft, CancellationToken, Task<TLeftResult>> selector, CancellationToken cancellationToken = default)
+        => IsRight ? new(_right) : new(await selector(_left, cancellationToken));
+    #endregion
+
+    #region Either Side
+    #region One Async
+    /// <summary>
+    /// Asynchronously maps a side-dependent selector over this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="leftSelector"></param>
+    /// <param name="rightSelector"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeftResult, TRightResult>> SelectAsync<TLeftResult, TRightResult>(
+        Func<TLeft, Task<TLeftResult>> leftSelector, Func<TRight, TRightResult> rightSelector)
+        => IsRight ? new(rightSelector(_right)) : new(await leftSelector(_left));
+
+    /// <summary>
+    /// Asynchronously maps a side-dependent selector over this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="leftSelector"></param>
+    /// <param name="rightSelector"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeftResult, TRightResult>> SelectAsync<TLeftResult, TRightResult>(
+        Func<TLeft, CancellationToken, Task<TLeftResult>> leftSelector, Func<TRight, TRightResult> rightSelector,
+        CancellationToken cancellationToken = default)
+        => IsRight ? new(rightSelector(_right)) : new(await leftSelector(_left, cancellationToken));
+
+    /// <summary>
+    /// Asynchronously maps a side-dependent selector over this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="leftSelector"></param>
+    /// <param name="rightSelector"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeftResult, TRightResult>> SelectAsync<TLeftResult, TRightResult>(
+        Func<TLeft, TLeftResult> leftSelector, Func<TRight, Task<TRightResult>> rightSelector)
+        => IsRight ? new(await rightSelector(_right)) : new(leftSelector(_left));
+
+    /// <summary>
+    /// Asynchronously maps a side-dependent selector over this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="leftSelector"></param>
+    /// <param name="rightSelector"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeftResult, TRightResult>> SelectAsync<TLeftResult, TRightResult>(
+        Func<TLeft, TLeftResult> leftSelector, Func<TRight, CancellationToken, Task<TRightResult>> rightSelector,
+        CancellationToken cancellationToken = default)
+        => IsRight ? new(await rightSelector(_right, cancellationToken)) : new(leftSelector(_left));
+    #endregion
+
+    #region Both Async
+    /// <summary>
+    /// Asynchronously maps a side-dependent selector over this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="leftSelector"></param>
+    /// <param name="rightSelector"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeftResult, TRightResult>> SelectAsync<TLeftResult, TRightResult>(
+        Func<TLeft, Task<TLeftResult>> leftSelector, Func<TRight, Task<TRightResult>> rightSelector)
+        => IsRight ? new(await rightSelector(_right)) : new(await leftSelector(_left));
+
+    /// <summary>
+    /// Asynchronously maps a side-dependent selector over this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="leftSelector"></param>
+    /// <param name="rightSelector"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeftResult, TRightResult>> SelectAsync<TLeftResult, TRightResult>(
+        Func<TLeft, CancellationToken, Task<TLeftResult>> leftSelector,
+        Func<TRight, Task<TRightResult>> rightSelector,
+        CancellationToken cancellationToken = default)
+        => IsRight ? new(await rightSelector(_right)) : new(await leftSelector(_left, cancellationToken));
+
+    /// <summary>
+    /// Asynchronously maps a side-dependent selector over this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="leftSelector"></param>
+    /// <param name="rightSelector"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeftResult, TRightResult>> SelectAsync<TLeftResult, TRightResult>(
+        Func<TLeft, Task<TLeftResult>> leftSelector,
+        Func<TRight, CancellationToken, Task<TRightResult>> rightSelector,
+        CancellationToken cancellationToken = default)
+        => IsRight ? new(await rightSelector(_right, cancellationToken)) : new(await leftSelector(_left));
+
+    /// <summary>
+    /// Asynchronously maps a side-dependent selector over this instance.
+    /// </summary>
+    /// <typeparam name="TLeftResult"></typeparam>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="leftSelector"></param>
+    /// <param name="rightSelector"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeftResult, TRightResult>> SelectAsync<TLeftResult, TRightResult>(
+        Func<TLeft, CancellationToken, Task<TLeftResult>> leftSelector,
+        Func<TRight, CancellationToken, Task<TRightResult>> rightSelector,
+        CancellationToken cancellationToken = default)
+        => IsRight
+            ? new(await rightSelector(_right, cancellationToken))
+            : new(await leftSelector(_left, cancellationToken));
+    #endregion
+    #endregion
+
+    #region Right
+    /// <summary>
+    /// Asynchronously maps a selector over the right side of this instance.
+    /// </summary>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="selector"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeft, TRightResult>> SelectRightAsync<TRightResult>(
+        Func<TRight, Task<TRightResult>> selector)
+        => IsRight ? new(await selector(_right)) : new(_left);
+
+    /// <summary>
+    /// Asynchronously maps a selector over the right side of this instance.
+    /// </summary>
+    /// <typeparam name="TRightResult"></typeparam>
+    /// <param name="selector"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<Either<TLeft, TRightResult>> SelectRightAsync<TRightResult>(
+        Func<TRight, CancellationToken, Task<TRightResult>> selector, CancellationToken cancellationToken = default)
+        => IsRight ? new(await selector(_right, cancellationToken)) : new(_left);
+    #endregion
+    #endregion
     #endregion
 
     #region SelectMany
