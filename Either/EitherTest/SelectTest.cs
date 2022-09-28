@@ -37,8 +37,8 @@ public class SelectTest
     [TestMethod]
     public void TestSelectLeft()
     {
-        Assert.That.HasLeft(4, Either<object?, string>.NewLeft(null).SelectLeft(o => o is null ? 4 : 5));
-        Assert.That.HasRight("", Either<object?, string>.New("").SelectLeft(o => o is null ? 4 : 5));
+        Assert.That.HasLeft(true, Either<object?, string>.NewLeft(null).SelectLeft(IsNull.Invoke));
+        Assert.That.HasRight("", Either<object?, string>.New("").SelectLeft(IsNull.Invoke));
     }
 
     /// <summary>
@@ -49,11 +49,8 @@ public class SelectTest
     [TestMethod]
     public void TestSelect()
     {
-        static string intToStr(int i) => i.ToString();
-        static int strToInt(string s) => int.Parse(s);
-
-        Assert.That.HasLeft("4", Either<int, string>.New(4).Select(intToStr, strToInt));
-        Assert.That.HasRight(4, Either<int, string>.New("4").Select(intToStr, strToInt));
+        Assert.That.HasLeft(false, Either<object?, string>.New(4).Select(IsNull.Invoke, StringLength.Invoke));
+        Assert.That.HasRight(1, Either<object?, string>.New("4").Select(IsNull.Invoke, StringLength.Invoke));
     }
 
     /// <summary>
@@ -62,8 +59,8 @@ public class SelectTest
     [TestMethod]
     public void TestSelectRight()
     {
-        Assert.That.HasRight(4, Either<object?, string>.New("").SelectRight(s => string.IsNullOrEmpty(s) ? 4 : 5));
-        Assert.That.HasLeft(null, Either<object?, string>.NewLeft(null).SelectRight(s => string.IsNullOrEmpty(s) ? 4 : 5));
+        Assert.That.HasRight(0, Either<object?, string>.New("").SelectRight(StringLength.Invoke));
+        Assert.That.HasLeft(null, Either<object?, string>.NewLeft(null).SelectRight(StringLength.Invoke));
     }
     #endregion
 
