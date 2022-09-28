@@ -598,11 +598,8 @@ public class SelectTest
     /// <param name="o"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private static async Task<bool> CancellableIsNullAsync(object? o, CancellationToken cancellationToken)
-    {
-        await Task.Delay(AsyncCancellableDelay, cancellationToken).ConfigureAwait(false);
-        return o is null;
-    }
+    private static Task<bool> CancellableIsNullAsync(object? o, CancellationToken cancellationToken)
+        => CallCancellable(o is null, cancellationToken);
 
     /// <summary>
     /// Gets the length of the string passed in.
@@ -633,11 +630,8 @@ public class SelectTest
     /// <param name="s"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private static async Task<int> CancellableStringLengthAsync(string s, CancellationToken cancellationToken)
-    {
-        await Task.Delay(AsyncCancellableDelay, cancellationToken).ConfigureAwait(false);
-        return s.Length;
-    }
+    private static Task<int> CancellableStringLengthAsync(string s, CancellationToken cancellationToken)
+        => CallCancellable(s.Length, cancellationToken);
     #endregion
 
     #region SelectMany
@@ -703,6 +697,21 @@ public class SelectTest
         else return s.Length;
     }
     #endregion
+    #endregion
+
+    #region Auxiliary
+    /// <summary>
+    /// Delays asynchronously before returning the specified value.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="result"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    private static async Task<T> CallCancellable<T>(T result, CancellationToken cancellationToken)
+    {
+        await Task.Delay(AsyncCancellableDelay).ConfigureAwait(false);
+        return result;
+    }
     #endregion
     #endregion
 }
