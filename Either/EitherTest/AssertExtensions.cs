@@ -107,4 +107,47 @@ internal static class AssertExtensions
         if (notExpected.SequenceEqual(actual)) Assert.Fail(message);
     }
     #endregion
+
+    #region Async
+    /// <summary>
+    /// Runs the task function asynchronously, canceling it before it can complete and ensuring that it throws an
+    /// <see cref="TaskCanceledException"/>.
+    /// </summary>
+    /// <typeparam name="TParameter"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="_"></param>
+    /// <param name="taskFactory"></param>
+    /// <param name="parameter"></param>
+    /// <returns></returns>
+    public static async Task<TaskCanceledException> IsCanceledAsync<TParameter, TResult>(
+        this Assert _,
+        Func<TParameter, CancellationToken, Task<TResult>> taskFactory, TParameter parameter)
+        => await Assert.ThrowsExceptionAsync<TaskCanceledException>(() => RunTaskAsync(taskFactory, parameter))
+                        .ConfigureAwait(false);
+
+    /// <summary>
+    /// Runs the task function asynchronously, triggering a cancelation that should not cause an exception.
+    /// </summary>
+    /// <typeparam name="TParameter"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="_"></param>
+    /// <param name="taskFactory"></param>
+    /// <param name="parameter"></param>
+    /// <returns></returns>
+    public static Task<TResult> IsNotCanceledAsync<TParameter, TResult>(
+        this Assert _,
+        Func<TParameter, CancellationToken, Task<TResult>> taskFactory, TParameter parameter)
+        => RunTaskAsync(taskFactory, parameter);
+
+    private static async Task<TResult> RunTaskAsync<TParameter, TResult>(
+        Func<TParameter, CancellationToken, Task<TResult>> taskFactory, TParameter parameter)
+    {
+        // Start a new cancellation token source that will cancel automatically after a wait period
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(AsyncTesting.CancellationTestWaitPeriod);
+
+        // Ensure that the task was not canceled
+        return await taskFactory(parameter, cts.Token).ConfigureAwait(false);
+    }
+    #endregion
 }

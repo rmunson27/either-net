@@ -16,18 +16,6 @@ namespace RemTest.Core.Utilities.Monads;
 [TestClass]
 public class SelectTest
 {
-    #region Constants
-    /// <summary>
-    /// The timespan to delay in a cancellable asynchronous selector.
-    /// </summary>
-    private static readonly TimeSpan AsyncCancellableDelay = TimeSpan.FromSeconds(2);
-
-    /// <summary>
-    /// The timespan to wait before testing a cancellation of an async method.
-    /// </summary>
-    private static readonly TimeSpan AsyncCancellationTestWaitPeriod = TimeSpan.FromSeconds(1);
-    #endregion
-
     #region Tests
     #region Select
     #region Synchronous
@@ -112,13 +100,13 @@ public class SelectTest
     [TestMethod]
     public async Task TestSelectLeftAsync_Cancellable_Cancellation()
     {
-        await TestAndAssertCanceled(
+        await Assert.That.IsCanceledAsync(
                     (e, ct) => e.SelectLeftAsync(IsNull.InvokeCancellableAsync, ct),
                     Either<object?, string>.NewLeft(null))
                 .ConfigureAwait(false);
         Assert.That.HasRight(
             "",
-            await TestAndAssertNotCanceled(
+            await Assert.That.IsNotCanceledAsync(
                 (e, ct) => e.SelectLeftAsync(IsNull.InvokeCancellableAsync, ct), Either<object?, string>.New(""))
                 .ConfigureAwait(false));
     }
@@ -177,13 +165,13 @@ public class SelectTest
     [TestMethod]
     public async Task TestSelectAsync_LeftAsyncOnly_Cancellable_Cancellation()
     {
-        await TestAndAssertCanceled(
+        await Assert.That.IsCanceledAsync(
                     (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.Invoke, ct),
                     Either<object?, string>.NewLeft(null))
                 .ConfigureAwait(false);
         Assert.That.HasRight(
             0,
-            await TestAndAssertNotCanceled(
+            await Assert.That.IsNotCanceledAsync(
                     (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.Invoke, ct),
                     Either<object?, string>.New(""))
                 .ConfigureAwait(false));
@@ -245,13 +233,13 @@ public class SelectTest
     [TestMethod]
     public async Task TestSelectAsync_BothAsync_OnlyLeftCancellable_Cancellation()
     {
-        await TestAndAssertCanceled(
+        await Assert.That.IsCanceledAsync(
                 (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeAsync, ct),
                 Either<object?, string>.NewLeft(null))
             .ConfigureAwait(false);
         Assert.That.HasRight(
             0,
-            await TestAndAssertNotCanceled(
+            await Assert.That.IsNotCanceledAsync(
                 (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeAsync, ct),
                     Either<object?, string>.New(""))
                 .ConfigureAwait(false));
@@ -289,13 +277,13 @@ public class SelectTest
     [TestMethod]
     public async Task TestSelectAsync_BothAsync_OnlyRightCancellable_Cancellation()
     {
-        await TestAndAssertCanceled(
+        await Assert.That.IsCanceledAsync(
                 (e, ct) => e.SelectAsync(IsNull.InvokeAsync, StringLength.InvokeCancellableAsync, ct),
                 Either<object?, string>.New(""))
             .ConfigureAwait(false);
         Assert.That.HasLeft(
             true,
-            await TestAndAssertNotCanceled(
+            await Assert.That.IsNotCanceledAsync(
                 (e, ct) => e.SelectAsync(IsNull.InvokeAsync, StringLength.InvokeCancellableAsync, ct),
                     Either<object?, string>.NewLeft(null))
                 .ConfigureAwait(false));
@@ -333,11 +321,11 @@ public class SelectTest
     [TestMethod]
     public async Task TestSelectAsync_BothAsync_BothCancellable_Cancellation()
     {
-        await TestAndAssertCanceled(
+        await Assert.That.IsCanceledAsync(
                 (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeCancellableAsync, ct),
                 Either<object?, string>.NewLeft(null))
             .ConfigureAwait(false);
-        await TestAndAssertCanceled(
+        await Assert.That.IsCanceledAsync(
                 (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeCancellableAsync, ct),
                 Either<object?, string>.New(""))
             .ConfigureAwait(false);
@@ -397,14 +385,14 @@ public class SelectTest
     [TestMethod]
     public async Task TestSelectAsync_RightAsyncOnly_Cancellable_Cancellation()
     {
-        await TestAndAssertCanceled(
+        await Assert.That.IsCanceledAsync(
                     (e, ct) => e.SelectAsync(IsNull.Invoke, StringLength.InvokeCancellableAsync, ct),
                     Either<object?, string>.New(""))
                 .ConfigureAwait(false);
 
         Assert.That.HasLeft(
             true,
-            await TestAndAssertNotCanceled(
+            await Assert.That.IsNotCanceledAsync(
                     (e, ct) => e.SelectAsync(IsNull.Invoke, StringLength.InvokeCancellableAsync, ct),
                     Either<object?, string>.NewLeft(null))
                 .ConfigureAwait(false));
@@ -459,12 +447,12 @@ public class SelectTest
     [TestMethod]
     public async Task TestSelectRightAsync_Cancellable_Cancellation()
     {
-        await TestAndAssertCanceled(
+        await Assert.That.IsCanceledAsync(
                 (e, ct) => e.SelectRightAsync(IsNull.InvokeCancellableAsync, ct),
                 Either<string, object?>.NewRight(null)).ConfigureAwait(false);
         Assert.That.HasLeft(
             "",
-            await TestAndAssertNotCanceled(
+            await Assert.That.IsNotCanceledAsync(
                 (e, ct) => e.SelectRightAsync(IsNull.InvokeCancellableAsync, ct), Either<string, object?>.New(""))
                 .ConfigureAwait(false));
     }
@@ -538,48 +526,6 @@ public class SelectTest
     #endregion
 
     #region Helpers
-    #region Testers
-    /// <summary>
-    /// Runs the task function asynchronously, canceling it before it can complete and ensuring that it throws an
-    /// <see cref="OperationCanceledException"/>.
-    /// </summary>
-    /// <typeparam name="TParameter"></typeparam>
-    /// <typeparam name="TResult"></typeparam>
-    /// <param name="taskFactory"></param>
-    /// <param name="parameter"></param>
-    /// <returns></returns>
-    private static async Task<TaskCanceledException> TestAndAssertCanceled<TParameter, TResult>(
-        Func<TParameter, CancellationToken, Task<TResult>> taskFactory, TParameter parameter)
-    {
-        // Start a new cancellation token source that will cancel automatically after a wait period
-        using var cts = new CancellationTokenSource();
-        cts.CancelAfter(AsyncCancellationTestWaitPeriod);
-
-        // Ensure that the task is canceled before it is complete
-        return await Assert.ThrowsExceptionAsync<TaskCanceledException>(() => taskFactory(parameter, cts.Token))
-                            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Runs the task function asynchronously, triggering a cancelation that should not cause an exception.
-    /// </summary>
-    /// <typeparam name="TParameter"></typeparam>
-    /// <typeparam name="TResult"></typeparam>
-    /// <param name="taskFactory"></param>
-    /// <param name="parameter"></param>
-    /// <returns></returns>
-    private static async Task<TResult> TestAndAssertNotCanceled<TParameter, TResult>(
-        Func<TParameter, CancellationToken, Task<TResult>> taskFactory, TParameter parameter)
-    {
-        // Start a new cancellation token source that will cancel automatically after a wait period
-        using var cts = new CancellationTokenSource();
-        cts.CancelAfter(AsyncCancellationTestWaitPeriod);
-
-        // Ensure that the task was not canceled
-        return await taskFactory(parameter, cts.Token).ConfigureAwait(false);
-    }
-    #endregion
-
     #region Selectors
     #region Select
     /// <summary>
@@ -660,64 +606,6 @@ public class SelectTest
         else return s.Length;
     });
     #endregion
-    #endregion
-
-    #region Auxiliary
-    /// <summary>
-    /// Stores synchronous and asynchronous versions of a function needed for testing of the select methods.
-    /// </summary>
-    public sealed class FunctionOptions<TArg, TResult>
-    {
-        /// <summary>
-        /// The function for which options are being constructed.
-        /// </summary>
-        private Func<TArg, TResult> Delegate { get; }
-
-        /// <summary>
-        /// Constructs a new instance of the <see cref="FunctionOptions{TArg, TResult}"/> class set up to allow calls
-        /// to the function passed in.
-        /// </summary>
-        /// <param name="Function"></param>
-        public FunctionOptions(Func<TArg, TResult> Function)
-        {
-            Delegate = Function;
-        }
-
-        /// <summary>
-        /// Calls the method synchronously.
-        /// </summary>
-        /// <param name="arg"></param>
-        /// <returns></returns>
-        public TResult Invoke(TArg arg) => Delegate(arg);
-
-        /// <summary>
-        /// Calls the method asynchronously.
-        /// </summary>
-        /// <param name="arg"></param>
-        /// <returns></returns>
-        public Task<TResult> InvokeAsync(TArg arg) => Task.FromResult(Delegate(arg));
-
-        /// <summary>
-        /// Calls the method asynchronously with cancellation.
-        /// </summary>
-        /// <remarks>
-        /// This will delay the task by <see cref="AsyncCancellableDelay"/> before returning the result.
-        /// </remarks>
-        /// <param name="arg"></param>
-        /// <returns></returns>
-        public async Task<TResult> InvokeCancellableAsync(TArg arg, CancellationToken cancellationToken)
-        {
-            await Task.Delay(AsyncCancellableDelay, cancellationToken).ConfigureAwait(false);
-            return Delegate(arg);
-        }
-
-        public static implicit operator Func<TArg, TResult>(FunctionOptions<TArg, TResult> opts) => opts.Invoke;
-        public static implicit operator Func<TArg, Task<TResult>>(FunctionOptions<TArg, TResult> opts)
-            => opts.InvokeAsync;
-        public static implicit operator Func<TArg, CancellationToken, Task<TResult>>(
-            FunctionOptions<TArg, TResult> opts)
-            => opts.InvokeCancellableAsync;
-    }
     #endregion
     #endregion
 }
