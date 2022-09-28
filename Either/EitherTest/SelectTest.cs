@@ -671,12 +671,12 @@ public class SelectTest
     /// A both-sided many selector for the right side of an <see cref="Either{TLeft, TRight}"/> instance with an
     /// <see cref="int"/> on the left side or a <see cref="string"/> on the right side.
     /// </summary>
-    /// <param name="i"></param>
+    /// <param name="s"></param>
     /// <returns>
     /// An <see cref="Either{TLeft, TRight}"/> with <see cref="float.PositiveInfinity"/> on the right side if
     /// <paramref name="s"/> is <see langword="null"/>, otherwise the length of <paramref name="s"/> on the left side.
     /// </returns>
-    static Either<ulong, float> BothManySelectorRight(string? s)
+    private static Either<ulong, float> BothManySelectorRight(string? s)
     {
         if (s is null) return float.PositiveInfinity;
         else return (ulong)s.Length;
