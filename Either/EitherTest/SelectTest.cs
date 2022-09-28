@@ -79,10 +79,10 @@ public class SelectTest
     {
         Assert.That.HasLeft(
             true,
-            await Either<object?, string>.NewLeft(null).SelectLeftAsync(IsNullAsync).ConfigureAwait(false));
+            await Either<object?, string>.NewLeft(null).SelectLeftAsync(IsNull.InvokeAsync).ConfigureAwait(false));
         Assert.That.HasRight(
             "",
-            await Either<object?, string>.New("").SelectLeftAsync(IsNullAsync).ConfigureAwait(false));
+            await Either<object?, string>.New("").SelectLeftAsync(IsNull.InvokeAsync).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -97,12 +97,12 @@ public class SelectTest
         Assert.That.HasLeft(
             true,
             await Either<object?, string>.NewLeft(null)
-                    .SelectLeftAsync(CancellableIsNullAsync, CancellationToken.None)
+                    .SelectLeftAsync(IsNull.InvokeCancellableAsync, CancellationToken.None)
                     .ConfigureAwait(false));
         Assert.That.HasRight(
             "",
             await Either<object?, string>.New("")
-                    .SelectLeftAsync(CancellableIsNullAsync, CancellationToken.None)
+                    .SelectLeftAsync(IsNull.InvokeCancellableAsync, CancellationToken.None)
                     .ConfigureAwait(false));
     }
 
@@ -116,13 +116,13 @@ public class SelectTest
     public async Task TestSelectLeftAsync_Cancellable_Cancellation()
     {
         await TestAndAssertCanceled(
-                    (e, ct) => e.SelectLeftAsync(CancellableIsNullAsync, ct),
+                    (e, ct) => e.SelectLeftAsync(IsNull.InvokeCancellableAsync, ct),
                     Either<object?, string>.NewLeft(null))
                 .ConfigureAwait(false);
         Assert.That.HasRight(
             "",
             await TestAndAssertNotCanceled(
-                (e, ct) => e.SelectLeftAsync(CancellableIsNullAsync, ct), Either<object?, string>.New(""))
+                (e, ct) => e.SelectLeftAsync(IsNull.InvokeCancellableAsync, ct), Either<object?, string>.New(""))
                 .ConfigureAwait(false));
     }
     #endregion
@@ -140,10 +140,14 @@ public class SelectTest
     {
         Assert.That.HasLeft(
             true,
-            await Either<object?, string>.NewLeft(null).SelectAsync(IsNullAsync, StringLength).ConfigureAwait(false));
+            await Either<object?, string>.NewLeft(null)
+                    .SelectAsync(IsNull.InvokeAsync, StringLength.Invoke)
+                .ConfigureAwait(false));
         Assert.That.HasRight(
             0,
-            await Either<object?, string>.New("").SelectAsync(IsNullAsync, StringLength).ConfigureAwait(false));
+            await Either<object?, string>.New("")
+                    .SelectAsync(IsNull.InvokeAsync, StringLength.Invoke)
+                .ConfigureAwait(false));
     }
 
     /// <summary>
@@ -158,12 +162,12 @@ public class SelectTest
         Assert.That.HasLeft(
             true,
             await Either<object?, string>.NewLeft(null)
-                    .SelectAsync(CancellableIsNullAsync, StringLength, CancellationToken.None)
+                    .SelectAsync(IsNull.InvokeCancellableAsync, StringLength.Invoke, CancellationToken.None)
                     .ConfigureAwait(false));
         Assert.That.HasRight(
             0,
             await Either<object?, string>.New("")
-                    .SelectAsync(CancellableIsNullAsync, StringLength, CancellationToken.None)
+                    .SelectAsync(IsNull.InvokeCancellableAsync, StringLength.Invoke, CancellationToken.None)
                     .ConfigureAwait(false));
     }
 
@@ -177,12 +181,14 @@ public class SelectTest
     public async Task TestSelectAsync_LeftAsyncOnly_Cancellable_Cancellation()
     {
         await TestAndAssertCanceled(
-                (e, ct) => e.SelectAsync(CancellableIsNullAsync, StringLength, ct),
-                Either<object?, string>.NewLeft(null)).ConfigureAwait(false);
+                    (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.Invoke, ct),
+                    Either<object?, string>.NewLeft(null))
+                .ConfigureAwait(false);
         Assert.That.HasRight(
             0,
             await TestAndAssertNotCanceled(
-                (e, ct) => e.SelectAsync(CancellableIsNullAsync, StringLength, ct), Either<object?, string>.New(""))
+                    (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.Invoke, ct),
+                    Either<object?, string>.New(""))
                 .ConfigureAwait(false));
     }
     #endregion
@@ -200,10 +206,14 @@ public class SelectTest
     {
         Assert.That.HasLeft(
             true,
-            await Either<object?, string>.NewLeft(null).SelectAsync(IsNullAsync, StringLengthAsync).ConfigureAwait(false));
+            await Either<object?, string>.NewLeft(null)
+                    .SelectAsync(IsNull.InvokeAsync, StringLength.InvokeAsync)
+                .ConfigureAwait(false));
         Assert.That.HasRight(
             0,
-            await Either<object?, string>.New("").SelectAsync(IsNullAsync, StringLengthAsync).ConfigureAwait(false));
+            await Either<object?, string>.New("")
+                    .SelectAsync(IsNull.InvokeAsync, StringLength.InvokeAsync)
+                .ConfigureAwait(false));
     }
     #endregion
 
@@ -220,12 +230,12 @@ public class SelectTest
         Assert.That.HasLeft(
             true,
             await Either<object?, string>.NewLeft(null)
-                    .SelectAsync(CancellableIsNullAsync, StringLengthAsync)
+                    .SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeAsync)
                     .ConfigureAwait(false));
         Assert.That.HasRight(
             0,
             await Either<object?, string>.New("")
-                    .SelectAsync(CancellableIsNullAsync, StringLengthAsync)
+                    .SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeAsync)
                     .ConfigureAwait(false));
     }
 
@@ -239,13 +249,13 @@ public class SelectTest
     public async Task TestSelectAsync_BothAsync_OnlyLeftCancellable_Cancellation()
     {
         await TestAndAssertCanceled(
-                (e, ct) => e.SelectAsync(CancellableIsNullAsync, StringLengthAsync, ct),
+                (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeAsync, ct),
                 Either<object?, string>.NewLeft(null))
             .ConfigureAwait(false);
         Assert.That.HasRight(
             0,
             await TestAndAssertNotCanceled(
-                    (e, ct) => e.SelectAsync(CancellableIsNullAsync, StringLengthAsync, ct),
+                (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeAsync, ct),
                     Either<object?, string>.New(""))
                 .ConfigureAwait(false));
     }
@@ -264,12 +274,12 @@ public class SelectTest
         Assert.That.HasLeft(
             true,
             await Either<object?, string>.NewLeft(null)
-                    .SelectAsync(IsNullAsync, CancellableStringLengthAsync)
+                    .SelectAsync(IsNull.InvokeAsync, StringLength.InvokeCancellableAsync)
                     .ConfigureAwait(false));
         Assert.That.HasRight(
             0,
             await Either<object?, string>.New("")
-                    .SelectAsync(IsNullAsync, CancellableStringLengthAsync)
+                    .SelectAsync(IsNull.InvokeAsync, StringLength.InvokeCancellableAsync)
                     .ConfigureAwait(false));
     }
 
@@ -283,14 +293,14 @@ public class SelectTest
     public async Task TestSelectAsync_BothAsync_OnlyRightCancellable_Cancellation()
     {
         await TestAndAssertCanceled(
-                (e, ct) => e.SelectAsync(CancellableIsNullAsync, StringLengthAsync, ct),
-                Either<object?, string>.NewLeft(null))
+                (e, ct) => e.SelectAsync(IsNull.InvokeAsync, StringLength.InvokeCancellableAsync, ct),
+                Either<object?, string>.New(""))
             .ConfigureAwait(false);
-        Assert.That.HasRight(
-            0,
+        Assert.That.HasLeft(
+            true,
             await TestAndAssertNotCanceled(
-                    (e, ct) => e.SelectAsync(CancellableIsNullAsync, StringLengthAsync, ct),
-                    Either<object?, string>.New(""))
+                (e, ct) => e.SelectAsync(IsNull.InvokeAsync, StringLength.InvokeCancellableAsync, ct),
+                    Either<object?, string>.NewLeft(null))
                 .ConfigureAwait(false));
     }
     #endregion
@@ -308,12 +318,12 @@ public class SelectTest
         Assert.That.HasLeft(
             true,
             await Either<object?, string>.NewLeft(null)
-                    .SelectAsync(CancellableIsNullAsync, CancellableStringLengthAsync)
+                    .SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeCancellableAsync)
                     .ConfigureAwait(false));
         Assert.That.HasRight(
             0,
             await Either<object?, string>.New("")
-                    .SelectAsync(CancellableIsNullAsync, CancellableStringLengthAsync)
+                    .SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeCancellableAsync)
                     .ConfigureAwait(false));
     }
 
@@ -327,11 +337,11 @@ public class SelectTest
     public async Task TestSelectAsync_BothAsync_BothCancellable_Cancellation()
     {
         await TestAndAssertCanceled(
-                (e, ct) => e.SelectAsync(CancellableIsNullAsync, CancellableStringLengthAsync, ct),
+                (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeCancellableAsync, ct),
                 Either<object?, string>.NewLeft(null))
             .ConfigureAwait(false);
         await TestAndAssertCanceled(
-                (e, ct) => e.SelectAsync(CancellableIsNullAsync, CancellableStringLengthAsync, ct),
+                (e, ct) => e.SelectAsync(IsNull.InvokeCancellableAsync, StringLength.InvokeCancellableAsync, ct),
                 Either<object?, string>.New(""))
             .ConfigureAwait(false);
     }
@@ -350,10 +360,14 @@ public class SelectTest
     {
         Assert.That.HasLeft(
             true,
-            await Either<object?, string>.NewLeft(null).SelectAsync(IsNull, StringLengthAsync).ConfigureAwait(false));
+            await Either<object?, string>.NewLeft(null)
+                .SelectAsync(IsNull.Invoke, StringLength.InvokeAsync)
+                .ConfigureAwait(false));
         Assert.That.HasRight(
             0,
-            await Either<object?, string>.New("").SelectAsync(IsNull, StringLengthAsync).ConfigureAwait(false));
+            await Either<object?, string>.New("")
+                .SelectAsync(IsNull.Invoke, StringLength.InvokeAsync)
+                .ConfigureAwait(false));
     }
 
     /// <summary>
@@ -368,12 +382,12 @@ public class SelectTest
         Assert.That.HasLeft(
             true,
             await Either<object?, string>.NewLeft(null)
-                    .SelectAsync(IsNull, CancellableStringLengthAsync, CancellationToken.None)
+                    .SelectAsync(IsNull.Invoke, StringLength.InvokeCancellableAsync, CancellationToken.None)
                     .ConfigureAwait(false));
         Assert.That.HasRight(
             0,
             await Either<object?, string>.New("")
-                    .SelectAsync(IsNull, CancellableStringLengthAsync, CancellationToken.None)
+                    .SelectAsync(IsNull.Invoke, StringLength.InvokeCancellableAsync, CancellationToken.None)
                     .ConfigureAwait(false));
     }
 
@@ -387,14 +401,15 @@ public class SelectTest
     public async Task TestSelectAsync_RightAsyncOnly_Cancellable_Cancellation()
     {
         await TestAndAssertCanceled(
-                    (e, ct) => e.SelectAsync(IsNull, CancellableStringLengthAsync, ct),
+                    (e, ct) => e.SelectAsync(IsNull.Invoke, StringLength.InvokeCancellableAsync, ct),
                     Either<object?, string>.New(""))
                 .ConfigureAwait(false);
 
         Assert.That.HasLeft(
             true,
             await TestAndAssertNotCanceled(
-                (e, ct) => e.SelectAsync(IsNull, CancellableStringLengthAsync, ct), Either<object?, string>.NewLeft(null))
+                    (e, ct) => e.SelectAsync(IsNull.Invoke, StringLength.InvokeCancellableAsync, ct),
+                    Either<object?, string>.NewLeft(null))
                 .ConfigureAwait(false));
     }
     #endregion
@@ -411,10 +426,10 @@ public class SelectTest
     {
         Assert.That.HasRight(
             true,
-            await Either<string, object?>.NewRight(null).SelectRightAsync(IsNullAsync).ConfigureAwait(false));
+            await Either<string, object?>.NewRight(null).SelectRightAsync(IsNull.InvokeAsync).ConfigureAwait(false));
         Assert.That.HasLeft(
             "",
-            await Either<string, object?>.New("").SelectRightAsync(IsNullAsync).ConfigureAwait(false));
+            await Either<string, object?>.New("").SelectRightAsync(IsNull.InvokeAsync).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -429,12 +444,12 @@ public class SelectTest
         Assert.That.HasRight(
             true,
             await Either<string, object?>.NewRight(null)
-                    .SelectRightAsync(CancellableIsNullAsync, CancellationToken.None)
+                    .SelectRightAsync(IsNull.InvokeCancellableAsync, CancellationToken.None)
                     .ConfigureAwait(false));
         Assert.That.HasLeft(
             "",
             await Either<string, object?>.New("")
-                    .SelectRightAsync(CancellableIsNullAsync, CancellationToken.None)
+                    .SelectRightAsync(IsNull.InvokeCancellableAsync, CancellationToken.None)
                     .ConfigureAwait(false));
     }
 
@@ -448,12 +463,12 @@ public class SelectTest
     public async Task TestSelectRightAsync_Cancellable_Cancellation()
     {
         await TestAndAssertCanceled(
-                (e, ct) => e.SelectRightAsync(CancellableIsNullAsync, ct),
+                (e, ct) => e.SelectRightAsync(IsNull.InvokeCancellableAsync, ct),
                 Either<string, object?>.NewRight(null)).ConfigureAwait(false);
         Assert.That.HasLeft(
             "",
             await TestAndAssertNotCanceled(
-                (e, ct) => e.SelectRightAsync(CancellableIsNullAsync, ct), Either<string, object?>.New(""))
+                (e, ct) => e.SelectRightAsync(IsNull.InvokeCancellableAsync, ct), Either<string, object?>.New(""))
                 .ConfigureAwait(false));
     }
     #endregion
@@ -470,12 +485,12 @@ public class SelectTest
     public void TestSelectManyLeft()
     {
         // Function is called
-        Assert.That.HasLeft(2uL, Either<int, string?>.New(2).SelectManyLeft(SingleManySelectorLeft));
-        Assert.That.HasRight("-2", Either<int, string?>.New(-2).SelectManyLeft(SingleManySelectorLeft));
-        Assert.That.HasRight(null, Either<int, string?>.New(3).SelectManyLeft(SingleManySelectorLeft));
+        Assert.That.HasLeft(2uL, Either<int, string?>.New(2).SelectManyLeft(SingleManySelectorLeft.Invoke));
+        Assert.That.HasRight("-2", Either<int, string?>.New(-2).SelectManyLeft(SingleManySelectorLeft.Invoke));
+        Assert.That.HasRight(null, Either<int, string?>.New(3).SelectManyLeft(SingleManySelectorLeft.Invoke));
 
         // Function is not called
-        Assert.That.HasRight("sss", Either<int, string?>.New("sss").SelectManyLeft(SingleManySelectorLeft));
+        Assert.That.HasRight("sss", Either<int, string?>.New("sss").SelectManyLeft(SingleManySelectorLeft.Invoke));
     }
 
     /// <summary>
@@ -489,21 +504,21 @@ public class SelectTest
         // Left function is called
         Assert.That.HasLeft(
             2uL,
-            Either<int, string?>.New(2).SelectMany(BothManySelectorLeft, BothManySelectorRight));
+            Either<int, string?>.New(2).SelectMany(BothManySelectorLeft.Invoke, BothManySelectorRight));
         Assert.That.HasRight(
             float.NegativeInfinity,
-            Either<int, string?>.New(-2).SelectMany(BothManySelectorLeft, BothManySelectorRight));
+            Either<int, string?>.New(-2).SelectMany(BothManySelectorLeft.Invoke, BothManySelectorRight));
         Assert.That.HasRight(
             float.NaN,
-            Either<int, string?>.New(3).SelectMany(BothManySelectorLeft, BothManySelectorRight));
+            Either<int, string?>.New(3).SelectMany(BothManySelectorLeft.Invoke, BothManySelectorRight));
 
         // Right function is called
         Assert.That.HasRight(
             float.PositiveInfinity,
-            Either<int, string?>.New(null).SelectMany(BothManySelectorLeft, BothManySelectorRight));
+            Either<int, string?>.New(null).SelectMany(BothManySelectorLeft.Invoke, BothManySelectorRight));
         Assert.That.HasLeft(
             3uL,
-            Either<int, string?>.New("rrr").SelectMany(BothManySelectorLeft, BothManySelectorRight));
+            Either<int, string?>.New("rrr").SelectMany(BothManySelectorLeft.Invoke, BothManySelectorRight));
     }
 
     /// <summary>
@@ -515,11 +530,12 @@ public class SelectTest
     public void TestSelectManyRight()
     {
         // Function is called
-        Assert.That.HasRight(float.NaN, Either<int, string?>.New(null).SelectManyRight(SingleManySelectorRight));
-        Assert.That.HasLeft(0, Either<int, string?>.New("").SelectManyRight(SingleManySelectorRight));
+        Assert.That.HasRight(
+            float.NaN, Either<int, string?>.New(null).SelectManyRight(SingleManySelectorRight.Invoke));
+        Assert.That.HasLeft(0, Either<int, string?>.New("").SelectManyRight(SingleManySelectorRight.Invoke));
 
         // Function is not called
-        Assert.That.HasLeft(3, Either<int, string?>.New(3).SelectManyRight(SingleManySelectorRight));
+        Assert.That.HasLeft(3, Either<int, string?>.New(3).SelectManyRight(SingleManySelectorRight.Invoke));
     }
     #endregion
     #endregion
@@ -575,31 +591,8 @@ public class SelectTest
     /// <remarks>
     /// This predicate is used internally as a selector to test the methods.
     /// </remarks>
-    /// <param name="o"></param>
     /// <returns></returns>
-    private static bool IsNull(object? o) => o is null;
-
-    /// <summary>
-    /// Asynchronously determines if the <see cref="object"/> passed in is <see langword="null"/>.
-    /// </summary>
-    /// <remarks>
-    /// This predicate is used internally as a selector to test the methods.
-    /// </remarks>
-    /// <param name="o"></param>
-    /// <returns></returns>
-    private static Task<bool> IsNullAsync(object? o) => Task.FromResult(o is null);
-
-    /// <summary>
-    /// Asynchronously determines if the <see cref="object"/> passed in is <see langword="null"/>.
-    /// </summary>
-    /// <remarks>
-    /// This predicate is used internally as a selector to test the methods.
-    /// </remarks>
-    /// <param name="o"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private static Task<bool> CancellableIsNullAsync(object? o, CancellationToken cancellationToken)
-        => CallCancellable(o is null, cancellationToken);
+    private static readonly FunctionOptions<object?, bool> IsNull = new(o => o is null);
 
     /// <summary>
     /// Gets the length of the string passed in.
@@ -607,31 +600,8 @@ public class SelectTest
     /// <remarks>
     /// This selector is used internally to test the methods.
     /// </remarks>
-    /// <param name="s"></param>
     /// <returns></returns>
-    private static int StringLength(string s) => s.Length;
-
-    /// <summary>
-    /// Asynchronously gets the length of the string passed in.
-    /// </summary>
-    /// <remarks>
-    /// This selector is used internally to test the methods.
-    /// </remarks>
-    /// <param name="s"></param>
-    /// <returns></returns>
-    private static Task<int> StringLengthAsync(string s) => Task.FromResult(s.Length);
-
-    /// <summary>
-    /// Asynchronously gets the length of the string passed in.
-    /// </summary>
-    /// <remarks>
-    /// This selector is used internally to test the methods.
-    /// </remarks>
-    /// <param name="s"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private static Task<int> CancellableStringLengthAsync(string s, CancellationToken cancellationToken)
-        => CallCancellable(s.Length, cancellationToken);
+    private static readonly FunctionOptions<string, int> StringLength = new(s => s.Length);
     #endregion
 
     #region SelectMany
@@ -639,78 +609,117 @@ public class SelectTest
     /// A single-sided many selector for the left side of an <see cref="Either{TLeft, TRight}"/> instance with an
     /// <see cref="int"/> on the left side or a <see cref="string"/> on the right side.
     /// </summary>
-    /// <param name="i"></param>
     /// <returns>
-    /// An <see cref="Either{TLeft, TRight}"/> with the value of (non-negative) <paramref name="i"/> on the left side
-    /// and the string representation of (negative) <paramref name="i"/> on the right side if <paramref name="i"/> is
-    /// even, otherwise <see langword="null"/> on the right side.
+    /// An <see cref="Either{TLeft, TRight}"/> with the (non-negative) value of the parameter on the left side
+    /// and the string representation of the (negative) parameter on the right side if the parameter is even,
+    /// otherwise <see langword="null"/> on the right side.
     /// </returns>
-    private static Either<ulong, string?> SingleManySelectorLeft(int i)
+    private static readonly FunctionOptions<int, Either<ulong, string?>> SingleManySelectorLeft = new(i =>
     {
         if (i % 2 == 0) return i >= 0 ? (ulong)i : i.ToString();
         else return null;
-    }
+    });
 
     /// <summary>
     /// A both-sided many selector for the left side of an <see cref="Either{TLeft, TRight}"/> instance with an
     /// <see cref="int"/> on the left side or a <see cref="string"/> on the right side.
     /// </summary>
-    /// <param name="i"></param>
     /// <returns>
-    /// An <see cref="Either{TLeft, TRight}"/> with the (even, non-negative) value of <paramref name="i"/> on the left side
-    /// or <see cref="float.NegativeInfinity"/> on the right side if <paramref name="i"/> is an even negative value,
+    /// An <see cref="Either{TLeft, TRight}"/> with the (even, non-negative) value of the parameter on the left side
+    /// or <see cref="float.NegativeInfinity"/> on the right side if the parameter is an even negative value,
     /// otherwise <see cref="float.NaN"/>.
     /// </returns>
-    private static Either<ulong, float> BothManySelectorLeft(int i)
+    private static readonly FunctionOptions<int, Either<ulong, float>> BothManySelectorLeft = new(i =>
     {
         if (i % 2 == 0) return i >= 0 ? Either<ulong, float>.NewLeft((ulong)i) : float.NegativeInfinity;
         else return float.NaN;
-    }
+    });
 
     /// <summary>
     /// A both-sided many selector for the right side of an <see cref="Either{TLeft, TRight}"/> instance with an
     /// <see cref="int"/> on the left side or a <see cref="string"/> on the right side.
     /// </summary>
-    /// <param name="s"></param>
     /// <returns>
-    /// An <see cref="Either{TLeft, TRight}"/> with <see cref="float.PositiveInfinity"/> on the right side if
-    /// <paramref name="s"/> is <see langword="null"/>, otherwise the length of <paramref name="s"/> on the left side.
+    /// An <see cref="Either{TLeft, TRight}"/> with <see cref="float.PositiveInfinity"/> on the right side if the
+    /// parameter is <see langword="null"/>, otherwise the length of the parameter on the left side.
     /// </returns>
-    private static Either<ulong, float> BothManySelectorRight(string? s)
+    private static readonly FunctionOptions<string?, Either<ulong, float>> BothManySelectorRight = new(s =>
     {
         if (s is null) return float.PositiveInfinity;
         else return (ulong)s.Length;
-    }
+    });
 
     /// <summary>
     /// A single-sided many selector for the right side of an <see cref="Either{TLeft, TRight}"/> instance with an
     /// <see cref="int"/> on the left side or a <see cref="string"/> on the right side.
     /// </summary>
-    /// <param name="s"></param>
     /// <returns>
-    /// An <see cref="Either{TLeft, TRight}"/> with <see cref="float.NaN"/> on the right side if <paramref name="s"/>
-    /// is <see langword="null"/>, or the length of <paramref name="s"/> on the left side otherwise.
+    /// An <see cref="Either{TLeft, TRight}"/> with <see cref="float.NaN"/> on the right side if the parameter
+    /// is <see langword="null"/>, or the length of the parameter on the left side otherwise.
     /// </returns>
-    private static Either<int, float> SingleManySelectorRight(string? s)
+    private static readonly FunctionOptions<string?, Either<int, float>> SingleManySelectorRight = new(s =>
     {
         if (s is null) return float.NaN;
         else return s.Length;
-    }
+    });
     #endregion
     #endregion
 
     #region Auxiliary
     /// <summary>
-    /// Delays asynchronously before returning the specified value.
+    /// Stores synchronous and asynchronous versions of a function needed for testing of the select methods.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="result"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private static async Task<T> CallCancellable<T>(T result, CancellationToken cancellationToken)
+    public sealed class FunctionOptions<TArg, TResult>
     {
-        await Task.Delay(AsyncCancellableDelay).ConfigureAwait(false);
-        return result;
+        /// <summary>
+        /// The function for which options are being constructed.
+        /// </summary>
+        private Func<TArg, TResult> Delegate { get; }
+
+        /// <summary>
+        /// Constructs a new instance of the <see cref="FunctionOptions{TArg, TResult}"/> class set up to allow calls
+        /// to the function passed in.
+        /// </summary>
+        /// <param name="Function"></param>
+        public FunctionOptions(Func<TArg, TResult> Function)
+        {
+            Delegate = Function;
+        }
+
+        /// <summary>
+        /// Calls the method synchronously.
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        public TResult Invoke(TArg arg) => Delegate(arg);
+
+        /// <summary>
+        /// Calls the method asynchronously.
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        public Task<TResult> InvokeAsync(TArg arg) => Task.FromResult(Delegate(arg));
+
+        /// <summary>
+        /// Calls the method asynchronously with cancellation.
+        /// </summary>
+        /// <remarks>
+        /// This will delay the task by <see cref="AsyncCancellableDelay"/> before returning the result.
+        /// </remarks>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        public async Task<TResult> InvokeCancellableAsync(TArg arg, CancellationToken cancellationToken)
+        {
+            await Task.Delay(AsyncCancellableDelay, cancellationToken).ConfigureAwait(false);
+            return Delegate(arg);
+        }
+
+        public static implicit operator Func<TArg, TResult>(FunctionOptions<TArg, TResult> opts) => opts.Invoke;
+        public static implicit operator Func<TArg, Task<TResult>>(FunctionOptions<TArg, TResult> opts)
+            => opts.InvokeAsync;
+        public static implicit operator Func<TArg, CancellationToken, Task<TResult>>(
+            FunctionOptions<TArg, TResult> opts)
+            => opts.InvokeCancellableAsync;
     }
     #endregion
     #endregion
