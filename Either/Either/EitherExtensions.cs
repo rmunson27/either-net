@@ -19,20 +19,20 @@ public static class EitherExtensions
     /// <typeparam name="TRight"></typeparam>
     /// <typeparam name="TParent"></typeparam>
     /// <param name="either"></param>
-    /// <param name="predicate"></param>
+    /// <param name="parentPredicate"></param>
     /// <returns></returns>
-    public static IEnumerable<TParent> Where<TLeft, TRight, TParent>(
-        this Either<TLeft, TRight> either, Func<TParent, bool> predicate)
+    public static IEnumerable<TParent> WhereEither<TLeft, TRight, TParent>(
+        this Either<TLeft, TRight> either, Func<TParent, bool> parentPredicate)
         where TLeft : TParent
         where TRight : TParent
     {
         if (either.IsRight)
         {
-            if (predicate(either._right)) yield return either._right;
+            if (parentPredicate(either._right)) yield return either._right;
         }
         else
         {
-            if (predicate(either._left)) yield return either._left;
+            if (parentPredicate(either._left)) yield return either._left;
         }
     }
     #endregion

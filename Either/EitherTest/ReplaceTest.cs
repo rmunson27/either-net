@@ -38,50 +38,50 @@ public class ReplaceTest
     #region Both Sides
     #region Eager
     /// <summary>
-    /// Tests the <see cref="Either{TLeft, TRight}.Replace{TNewLeft, TNewRight}(TNewLeft, TNewRight)"/> method.
+    /// Tests the <see cref="Either{TLeft, TRight}.ReplaceEither{TNewLeft, TNewRight}(TNewLeft, TNewRight)"/> method.
     /// </summary>
     [TestMethod]
-    public void TestReplace()
+    public void TestReplaceEither()
     {
-        Assert.That.HasLeft(2.0, Either<int, string>.New(4).Replace(2.0, DateTime.Now));
-        Assert.That.HasRight(Millennium3, Either<int, string>.New("").Replace(2.0, Millennium3));
+        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceEither(2.0, DateTime.Now));
+        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceEither(2.0, Millennium3));
     }
     #endregion
 
     #region Lazy
     /// <summary>
-    /// Tests the <see cref="Either{TLeft, TRight}.ReplaceLazyLeft{TNewLeft, TNewRight}(Func{TNewLeft}, TNewRight)"/>
+    /// Tests the <see cref="Either{TLeft, TRight}.ReplaceEitherLazy{TNewLeft, TNewRight}(Func{TNewLeft}, TNewRight)"/>
     /// method.
     /// </summary>
     [TestMethod]
-    public void TestReplaceLazyLeft()
+    public void TestReplaceEitherLazy_LazyLeftOnly()
     {
-        Assert.That.HasLeft(2.0f, Either<int, string>.New(4).ReplaceLazyLeft(Get2.Invoke, DateTime.Now));
-        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceLazyLeft(Get2.Invoke, Millennium3));
+        Assert.That.HasLeft(2.0f, Either<int, string>.New(4).ReplaceEitherLazy(Get2.Invoke, DateTime.Now));
+        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceEitherLazy(Get2.Invoke, Millennium3));
     }
 
     /// <summary>
     /// Tests the
-    /// <see cref="Either{TLeft, TRight}.ReplaceLazy{TNewLeft, TNewRight}(Func{TNewLeft}, Func{TNewRight})"/> method.
+    /// <see cref="Either{TLeft, TRight}.ReplaceEitherLazy{TNewLeft, TNewRight}(Func{TNewLeft}, Func{TNewRight})"/> method.
     /// </summary>
     [TestMethod]
-    public void TestReplaceLazy()
+    public void TestReplaceEitherLazy()
     {
-        Assert.That.HasLeft(2.0f, Either<int, string>.New(4).ReplaceLazy(Get2.Invoke, GetMillennium3.Invoke));
+        Assert.That.HasLeft(2.0f, Either<int, string>.New(4).ReplaceEitherLazy(Get2.Invoke, GetMillennium3.Invoke));
         Assert.That.HasRight(
             Millennium3,
-            Either<int, string>.New("rr").ReplaceLazy(Get2.Invoke, GetMillennium3.Invoke));
+            Either<int, string>.New("rr").ReplaceEitherLazy(Get2.Invoke, GetMillennium3.Invoke));
     }
 
     /// <summary>
-    /// Tests the <see cref="Either{TLeft, TRight}.ReplaceLazyRight{TNewLeft, TNewRight}(TNewLeft, Func{TNewRight})"/>
+    /// Tests the <see cref="Either{TLeft, TRight}.ReplaceEitherLazy{TNewLeft, TNewRight}(TNewLeft, Func{TNewRight})"/>
     /// method.
     /// </summary>
     [TestMethod]
-    public void TestReplaceLazyRight()
+    public void TestReplaceEitherLazy_LazyRightOnly()
     {
-        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLazyRight(2.0, GetMillennium3.Invoke));
-        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceLazyRight(2.0, GetMillennium3.Invoke));
+        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceEitherLazy(2.0, GetMillennium3.Invoke));
+        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceEitherLazy(2.0, GetMillennium3.Invoke));
     }
     #endregion
     #endregion

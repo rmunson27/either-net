@@ -70,29 +70,29 @@ public class WhereTest
 
     #region Either Side
     /// <summary>
-    /// Tests the <see cref="Either{TLeft, TRight}.Where(Func{TLeft, bool}, Func{TRight, bool})"/> method.
+    /// Tests the <see cref="Either{TLeft, TRight}.WhereEither(Func{TLeft, bool}, Func{TRight, bool})"/> method.
     /// </summary>
     [TestMethod]
     public void TestWhere()
     {
-        Assert.That.SequenceEqual(new[] { 2 }, Either<string, int>.New(2).Where(LengthIsEven, IsEven));
-        Assert.IsFalse(Either<string, int>.New(3).Where(LengthIsEven, IsEven).Cast<object>().Any());
-        Assert.That.SequenceEqual(new[] { "" }, Either<string, int>.New("").Where(LengthIsEven, IsEven));
-        Assert.IsFalse(Either<string, int>.New(" ").Where(LengthIsEven, IsEven).Cast<object>().Any());
+        Assert.That.SequenceEqual(new[] { 2 }, Either<string, int>.New(2).WhereEither(LengthIsEven, IsEven));
+        Assert.IsFalse(Either<string, int>.New(3).WhereEither(LengthIsEven, IsEven).Cast<object>().Any());
+        Assert.That.SequenceEqual(new[] { "" }, Either<string, int>.New("").WhereEither(LengthIsEven, IsEven));
+        Assert.IsFalse(Either<string, int>.New(" ").WhereEither(LengthIsEven, IsEven).Cast<object>().Any());
     }
 
     /// <summary>
     /// Tests the
-    /// <see cref="EitherExtensions.Where{TLeft, TRight, TParent}(Either{TLeft, TRight}, Func{TParent, bool})"/>
+    /// <see cref="EitherExtensions.WhereEither{TLeft, TRight, TParent}(Either{TLeft, TRight}, Func{TParent, bool})"/>
     /// method.
     /// </summary>
     [TestMethod]
     public void TestWhereExtension()
     {
-        Assert.That.SequenceEqual(new[] { PersonalEmail }, Either<Email, Phone>.New(PersonalEmail).Where(IsPersonal));
-        Assert.IsFalse(Either<Email, Phone>.New(NonPersonalEmail).Where(IsPersonal).Any());
-        Assert.That.SequenceEqual(new[] { PersonalPhone }, Either<Email, Phone>.New(PersonalPhone).Where(IsPersonal));
-        Assert.IsFalse(Either<Email, Phone>.New(NonPersonalPhone).Where(IsPersonal).Any());
+        Assert.That.SequenceEqual(new[] { PersonalEmail }, Either<Email, Phone>.New(PersonalEmail).WhereEither(IsPersonal));
+        Assert.IsFalse(Either<Email, Phone>.New(NonPersonalEmail).WhereEither(IsPersonal).Any());
+        Assert.That.SequenceEqual(new[] { PersonalPhone }, Either<Email, Phone>.New(PersonalPhone).WhereEither(IsPersonal));
+        Assert.IsFalse(Either<Email, Phone>.New(NonPersonalPhone).WhereEither(IsPersonal).Any());
     }
     #endregion
 
