@@ -35,6 +35,55 @@ public class ReplaceTest
     }
     #endregion
 
+    #region Both Sides
+    #region Eager
+    /// <summary>
+    /// Tests the <see cref="Either{TLeft, TRight}.Replace{TNewLeft, TNewRight}(TNewLeft, TNewRight)"/> method.
+    /// </summary>
+    [TestMethod]
+    public void TestReplace()
+    {
+        Assert.That.HasLeft(2.0, Either<int, string>.New(4).Replace(2.0, DateTime.Now));
+        Assert.That.HasRight(NewMillennium, Either<int, string>.New("").Replace(2.0, NewMillennium));
+    }
+    #endregion
+
+    #region Lazy
+    /// <summary>
+    /// Tests the <see cref="Either{TLeft, TRight}.ReplaceLazyLeft{TNewLeft, TNewRight}(Func{TNewLeft}, TNewRight)"/>
+    /// method.
+    /// </summary>
+    [TestMethod]
+    public void TestReplaceLazyLeft()
+    {
+        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLazyLeft(Get2, DateTime.Now));
+        Assert.That.HasRight(NewMillennium, Either<int, string>.New("").ReplaceLazyLeft(Get2, NewMillennium));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.ReplaceLazy{TNewLeft, TNewRight}(Func{TNewLeft}, Func{TNewRight})"/> method.
+    /// </summary>
+    [TestMethod]
+    public void TestReplaceLazy()
+    {
+        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLazy(Get2, GetNewMillennium));
+        Assert.That.HasRight(NewMillennium, Either<int, string>.New("rr").ReplaceLazy(Get2, GetNewMillennium));
+    }
+
+    /// <summary>
+    /// Tests the <see cref="Either{TLeft, TRight}.ReplaceLazyRight{TNewLeft, TNewRight}(TNewLeft, Func{TNewRight})"/>
+    /// method.
+    /// </summary>
+    [TestMethod]
+    public void TestReplaceLazyRight()
+    {
+        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLazyRight(2.0, GetNewMillennium));
+        Assert.That.HasRight(NewMillennium, Either<int, string>.New("").ReplaceLazyRight(2.0, GetNewMillennium));
+    }
+    #endregion
+    #endregion
+
     #region Right
     /// <summary>
     /// Tests the <see cref="Either{TLeft, TRight}.ReplaceRight{TNewRight}(TNewRight)"/> method.
