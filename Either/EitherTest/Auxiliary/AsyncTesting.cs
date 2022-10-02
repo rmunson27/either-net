@@ -14,10 +14,10 @@ internal static class AsyncTesting
     /// <summary>
     /// The timespan to delay in a cancellable asynchronous delegate.
     /// </summary>
-    public static readonly TimeSpan CancellableDelegateDelay = TimeSpan.FromSeconds(2);
+    public static readonly TimeSpan CancellableDelegateDelay = TimeSpan.FromMilliseconds(500);
 
     /// <summary>
     /// The timespan to wait before testing a cancellation of an async operation.
     /// </summary>
-    public static readonly TimeSpan CancellationTestWaitPeriod = TimeSpan.FromSeconds(1);
+    public static readonly TimeSpan CancellationTestWaitPeriod = TimeSpan.FromMilliseconds(200);
 }
