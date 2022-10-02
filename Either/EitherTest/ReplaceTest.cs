@@ -44,7 +44,7 @@ public class ReplaceTest
     public void TestReplaceEither()
     {
         Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceEither(2.0, DateTime.Now));
-        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceEither(2.0, Millennium3));
+        Assert.That.HasRight(StartOfMillennium3, Either<int, string>.New("").ReplaceEither(2.0, StartOfMillennium3));
     }
     #endregion
 
@@ -57,7 +57,8 @@ public class ReplaceTest
     public void TestReplaceEitherLazy_LazyLeftOnly()
     {
         Assert.That.HasLeft(2.0f, Either<int, string>.New(4).ReplaceEitherLazy(Get2.Invoke, DateTime.Now));
-        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceEitherLazy(Get2.Invoke, Millennium3));
+        Assert.That.HasRight(
+            StartOfMillennium3, Either<int, string>.New("").ReplaceEitherLazy(Get2.Invoke, StartOfMillennium3));
     }
 
     /// <summary>
@@ -67,10 +68,11 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceEitherLazy()
     {
-        Assert.That.HasLeft(2.0f, Either<int, string>.New(4).ReplaceEitherLazy(Get2.Invoke, GetMillennium3.Invoke));
+        Assert.That.HasLeft(
+            2.0f, Either<int, string>.New(4).ReplaceEitherLazy(Get2.Invoke, GetStartOfMillennium3.Invoke));
         Assert.That.HasRight(
-            Millennium3,
-            Either<int, string>.New("rr").ReplaceEitherLazy(Get2.Invoke, GetMillennium3.Invoke));
+            StartOfMillennium3,
+            Either<int, string>.New("rr").ReplaceEitherLazy(Get2.Invoke, GetStartOfMillennium3.Invoke));
     }
 
     /// <summary>
@@ -80,8 +82,9 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceEitherLazy_LazyRightOnly()
     {
-        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceEitherLazy(2.0, GetMillennium3.Invoke));
-        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceEitherLazy(2.0, GetMillennium3.Invoke));
+        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceEitherLazy(2.0, GetStartOfMillennium3.Invoke));
+        Assert.That.HasRight(
+            StartOfMillennium3, Either<int, string>.New("").ReplaceEitherLazy(2.0, GetStartOfMillennium3.Invoke));
     }
     #endregion
     #endregion
@@ -103,8 +106,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceRightLazy()
     {
-        Assert.That.HasLeft(4, Either<int, string>.New(4).ReplaceRightLazy(GetMillennium3.Invoke));
-        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceRightLazy(GetMillennium3.Invoke));
+        Assert.That.HasLeft(4, Either<int, string>.New(4).ReplaceRightLazy(GetStartOfMillennium3.Invoke));
+        Assert.That.HasRight(StartOfMillennium3, Either<int, string>.New("").ReplaceRightLazy(GetStartOfMillennium3.Invoke));
     }
     #endregion
     #endregion
@@ -118,11 +121,11 @@ public class ReplaceTest
     /// <summary>
     /// A factory method that gets the first instant of the third millennium.
     /// </summary>
-    private static readonly FunctionOptions<DateTime> GetMillennium3 = new(() => Millennium3);
+    private static readonly FunctionOptions<DateTime> GetStartOfMillennium3 = new(() => StartOfMillennium3);
 
     /// <summary>
     /// The first instant of the third millennium.
     /// </summary>
-    private static readonly DateTime Millennium3 = DateTime.Parse("January 1, 2000");
+    private static readonly DateTime StartOfMillennium3 = DateTime.Parse("January 1, 2000");
     #endregion
 }
