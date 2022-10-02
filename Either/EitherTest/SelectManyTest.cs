@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ namespace RemTest.Core.Utilities.Monads;
 public class SelectManyTest
 {
     #region Tests
+    #region Synchronous
     /// <summary>
     /// Tests the
     /// <see cref="Either{TLeft, TRight}.SelectManyLeft{TLeftResult}(Func{TLeft, Either{TLeftResult, TRight}})"/>
@@ -74,6 +76,449 @@ public class SelectManyTest
         // Function is not called
         Assert.That.HasLeft(3, Either<int, string?>.New(3).SelectManyRight(SingleSelectorRight.Invoke));
     }
+    #endregion
+
+    #region Asynchronous
+    #region Left
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyLeftAsync{TLeftResult}(Func{TLeft, Task{Either{TLeftResult, TRight}}})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyLeftAsync_NonCancellable()
+    {
+        Assert.That.HasLeft(
+            2uL,
+            await Either<int, string?>.New(2)
+                    .SelectManyLeftAsync(SingleSelectorLeft.InvokeAsync)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            "eee",
+            await Either<int, string?>.New("eee")
+                    .SelectManyLeftAsync(SingleSelectorLeft.InvokeAsync)
+                    .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyLeftAsync{TLeftResult}(Func{TLeft, CancellationToken, Task{Either{TLeftResult, TRight}}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyLeftAsync_Cancellable_NoCancellation()
+    {
+        Assert.That.HasLeft(
+            2uL,
+            await Either<int, string?>.New(2)
+                    .SelectManyLeftAsync(SingleSelectorLeft.InvokeCancellableAsync)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            "eee",
+            await Either<int, string?>.New("eee")
+                    .SelectManyLeftAsync(SingleSelectorLeft.InvokeCancellableAsync)
+                    .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyLeftAsync{TLeftResult}(Func{TLeft, CancellationToken, Task{Either{TLeftResult, TRight}}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyLeftAsync_Cancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.SelectManyLeftAsync(SingleSelectorLeft.InvokeCancellableAsync, ct),
+                Either<int, string?>.New(2))
+            .ConfigureAwait(false);
+
+        Assert.That.HasRight(
+            "eee",
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.SelectManyLeftAsync(SingleSelectorLeft.InvokeCancellableAsync, ct),
+                    Either<int, string?>.New("eee"))
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Both Sides
+    #region Only Left Selector Async
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, Task{Either{TLeftResult, TRightResult}}}, Func{TRight, Either{TLeftResult, TRightResult}})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_LeftOnlyAsync_NonCancellable()
+    {
+        Assert.That.HasRight(
+            float.NaN,
+            await Either<int, string?>.New(3).SelectManyAsync(BothSelectorLeft.InvokeAsync, BothSelectorRight.Invoke)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            1uL,
+            await Either<int, string?>.New(" ").SelectManyAsync(BothSelectorLeft.InvokeAsync, BothSelectorRight.Invoke)
+                    .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, Func{TRight, Either{TLeftResult, TRightResult}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_LeftOnlyAsync_Cancellable_NoCancellation()
+    {
+        Assert.That.HasRight(
+            float.NaN,
+            await Either<int, string?>.New(3)
+                    .SelectManyAsync(BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.Invoke)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            1uL,
+            await Either<int, string?>.New(" ")
+                    .SelectManyAsync(BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.Invoke)
+                    .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, Func{TRight, Either{TLeftResult, TRightResult}}, CancellationToken)"/>
+    /// method, cancelling it to ensure cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_LeftOnlyAsync_Cancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                    (e, ct) => e.SelectManyAsync(BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.Invoke, ct),
+                    Either<int, string?>.New(3))
+                .ConfigureAwait(false);
+
+        Assert.That.HasLeft(
+            1uL,
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.SelectManyAsync(BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.Invoke, ct),
+                    Either<int, string?>.New(" "))
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Only Right Selector Async
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, Either{TLeftResult, TRightResult}}, Func{TRight, Task{Either{TLeftResult, TRightResult}}})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_RightOnlyAsync_NonCancellable()
+    {
+        Assert.That.HasRight(
+            float.NaN,
+            await Either<int, string?>.New(3).SelectManyAsync(BothSelectorLeft.Invoke, BothSelectorRight.InvokeAsync)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            1uL,
+            await Either<int, string?>.New(" ").SelectManyAsync(BothSelectorLeft.Invoke, BothSelectorRight.InvokeAsync)
+                    .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, Either{TLeftResult, TRightResult}}, Func{TRight, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_RightOnlyAsync_Cancellable_NoCancellation()
+    {
+        Assert.That.HasRight(
+            float.NaN,
+            await Either<int, string?>.New(3)
+                    .SelectManyAsync(BothSelectorLeft.Invoke, BothSelectorRight.InvokeCancellableAsync)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            1uL,
+            await Either<int, string?>.New(" ")
+                    .SelectManyAsync(BothSelectorLeft.Invoke, BothSelectorRight.InvokeCancellableAsync)
+                    .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, Either{TLeftResult, TRightResult}}, Func{TRight, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, CancellationToken)"/>
+    /// method, cancelling it to ensure cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_RightOnlyAsync_Cancellable_Cancellation()
+    {
+        Assert.That.HasRight(
+            float.NaN,
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.SelectManyAsync(BothSelectorLeft.Invoke, BothSelectorRight.InvokeCancellableAsync, ct),
+                    Either<int, string?>.New(3))
+                .ConfigureAwait(false));
+
+        await Assert.That.IsCanceledAsync(
+                    (e, ct) => e.SelectManyAsync(BothSelectorLeft.Invoke, BothSelectorRight.InvokeCancellableAsync, ct),
+                    Either<int, string?>.New(" "))
+                .ConfigureAwait(false);
+    }
+    #endregion
+
+    #region Both Selectors Async
+    #region Non-Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, Task{Either{TLeftResult, TRightResult}}}, Func{TRight, Task{Either{TLeftResult, TRightResult}}})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_BothAsync_NonCancellable()
+    {
+        Assert.That.HasRight(
+            float.NaN,
+            await Either<int, string?>.New(3)
+                    .SelectManyAsync(BothSelectorLeft.InvokeAsync, BothSelectorRight.InvokeAsync)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            1uL,
+            await Either<int, string?>.New(" ")
+                    .SelectManyAsync(BothSelectorLeft.InvokeAsync, BothSelectorRight.InvokeAsync)
+                    .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Left Only Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, Func{TRight, Task{Either{TLeftResult, TRightResult}}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_BothAsync_LeftOnlyCancellable_NoCancellation()
+    {
+        Assert.That.HasRight(
+            float.NaN,
+            await Either<int, string?>.New(3)
+                    .SelectManyAsync(BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.InvokeAsync)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            1uL,
+            await Either<int, string?>.New(" ")
+                    .SelectManyAsync(BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.InvokeAsync)
+                    .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, Func{TRight, Task{Either{TLeftResult, TRightResult}}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_BothAsync_LeftOnlyCancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                    (e, ct) => e.SelectManyAsync(
+                                    BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.InvokeAsync, ct),
+                    Either<int, string?>.New(3))
+                .ConfigureAwait(false);
+
+        Assert.That.HasLeft(
+            1uL,
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.SelectManyAsync(
+                                    BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.InvokeAsync, ct),
+                    Either<int, string?>.New(" "))
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Right Only Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, Task{Either{TLeftResult, TRightResult}}}, Func{TRight, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_BothAsync_RightOnlyCancellable_NoCancellation()
+    {
+        Assert.That.HasRight(
+            float.NaN,
+            await Either<int, string?>.New(3)
+                    .SelectManyAsync(BothSelectorLeft.InvokeAsync, BothSelectorRight.InvokeCancellableAsync)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            1uL,
+            await Either<int, string?>.New(" ")
+                    .SelectManyAsync(BothSelectorLeft.InvokeAsync, BothSelectorRight.InvokeCancellableAsync)
+                    .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, Task{Either{TLeftResult, TRightResult}}}, Func{TRight, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_BothAsync_RightOnlyCancellable_Cancellation()
+    {
+        Assert.That.HasRight(
+            float.NaN,
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.SelectManyAsync(
+                                    BothSelectorLeft.InvokeAsync, BothSelectorRight.InvokeCancellableAsync, ct),
+                    Either<int, string?>.New(3))
+                .ConfigureAwait(false));
+
+        await Assert.That.IsCanceledAsync(
+                    (e, ct) => e.SelectManyAsync(
+                                    BothSelectorLeft.InvokeAsync, BothSelectorRight.InvokeCancellableAsync, ct),
+                    Either<int, string?>.New(" "))
+                .ConfigureAwait(false);
+    }
+    #endregion
+
+    #region Both Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, Func{TRight, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_BothAsync_BothCancellable_NoCancellation()
+    {
+        Assert.That.HasRight(
+            float.NaN,
+            await Either<int, string?>.New(3)
+                    .SelectManyAsync(BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.InvokeCancellableAsync)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            1uL,
+            await Either<int, string?>.New(" ")
+                    .SelectManyAsync(BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.InvokeCancellableAsync)
+                    .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyAsync{TLeftResult, TRightResult}(Func{TLeft, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, Func{TRight, CancellationToken, Task{Either{TLeftResult, TRightResult}}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyAsync_BothAsync_BothCancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                    (e, ct) => e.SelectManyAsync(
+                                    BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.InvokeCancellableAsync,
+                                    ct),
+                    Either<int, string?>.New(3))
+                .ConfigureAwait(false);
+
+        await Assert.That.IsCanceledAsync(
+                    (e, ct) => e.SelectManyAsync(
+                                    BothSelectorLeft.InvokeCancellableAsync, BothSelectorRight.InvokeCancellableAsync,
+                                    ct),
+                    Either<int, string?>.New(" "))
+                .ConfigureAwait(false);
+    }
+    #endregion
+    #endregion
+    #endregion
+
+    #region Right
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyRightAsync{TRightResult}(Func{TRight, Task{Either{TLeft, TRightResult}}})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyRightAsync_NonCancellable()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Either<int, string?>.New(2)
+                    .SelectManyRightAsync(SingleSelectorRight.InvokeAsync)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            3,
+            await Either<int, string?>.New("eee")
+                    .SelectManyRightAsync(SingleSelectorRight.InvokeAsync)
+                    .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyRightAsync{TRightResult}(Func{TRight, CancellationToken, Task{Either{TLeft, TRightResult}}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyRightAsync_Cancellable_NoCancellation()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Either<int, string?>.New(2)
+                    .SelectManyRightAsync(SingleSelectorRight.InvokeCancellableAsync)
+                    .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            3,
+            await Either<int, string?>.New("eee")
+                    .SelectManyRightAsync(SingleSelectorRight.InvokeCancellableAsync)
+                    .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.SelectManyRightAsync{TRightResult}(Func{TRight, CancellationToken, Task{Either{TLeft, TRightResult}}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestSelectManyRightAsync_Cancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.SelectManyRightAsync(SingleSelectorRight.InvokeCancellableAsync, ct),
+                Either<int, string?>.New(" "))
+            .ConfigureAwait(false);
+
+        Assert.That.HasLeft(
+            2,
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.SelectManyRightAsync(SingleSelectorRight.InvokeCancellableAsync, ct),
+                    Either<int, string?>.New(2))
+                .ConfigureAwait(false));
+    }
+    #endregion
+    #endregion
     #endregion
 
     #region Helper Selectors
