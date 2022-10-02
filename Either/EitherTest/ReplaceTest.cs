@@ -12,6 +12,7 @@ namespace RemTest.Core.Utilities.Monads;
 [TestClass]
 public class ReplaceTest
 {
+    #region Tests
     #region Left
     /// <summary>
     /// Tests the <see cref="Either{TLeft, TRight}.ReplaceLeft{TNewLeft}(TNewLeft)"/> method.
@@ -29,9 +30,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceLeftLazy()
     {
-        static double newValueFactory() => 2.0;
-        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLeftLazy(newValueFactory));
-        Assert.That.HasRight("", Either<int, string>.New("").ReplaceLeftLazy(newValueFactory));
+        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLeftLazy(Get2));
+        Assert.That.HasRight("", Either<int, string>.New("").ReplaceLeftLazy(Get2));
     }
     #endregion
 
@@ -42,8 +42,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceRight()
     {
-        Assert.That.HasRight(2.0, Either<string, int>.New(4).ReplaceRight(2.0));
-        Assert.That.HasLeft("", Either<string, int>.New("").ReplaceRight(2.0));
+        Assert.That.HasLeft(2, Either<int, string>.New(2).ReplaceRight(3.0));
+        Assert.That.HasRight(3.0, Either<int, string>.New("").ReplaceRight(3.0));
     }
 
     /// <summary>
@@ -52,9 +52,28 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceRightLazy()
     {
-        static double newValueFactory() => 2.0;
-        Assert.That.HasRight(2.0, Either<string, int>.New(4).ReplaceRightLazy(newValueFactory));
-        Assert.That.HasLeft("", Either<string, int>.New("").ReplaceRightLazy(newValueFactory));
+        Assert.That.HasLeft(4, Either<int, string>.New(4).ReplaceRightLazy(GetNewMillennium));
+        Assert.That.HasRight(NewMillennium, Either<int, string>.New("").ReplaceRightLazy(GetNewMillennium));
     }
+    #endregion
+    #endregion
+
+    #region Helper Factories
+    /// <summary>
+    /// A factory method that gets the number 2.
+    /// </summary>
+    /// <returns></returns>
+    private static double Get2() => 2;
+
+    /// <summary>
+    /// A factory method that gets the first second of the new millennium.
+    /// </summary>
+    /// <returns></returns>
+    private static DateTime GetNewMillennium() => NewMillennium;
+
+    /// <summary>
+    /// The first second of the new millennium.
+    /// </summary>
+    private static readonly DateTime NewMillennium = DateTime.Parse("January 1, 2000");
     #endregion
 }
