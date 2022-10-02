@@ -30,8 +30,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceLeftLazy()
     {
-        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLeftLazy(Get2));
-        Assert.That.HasRight("", Either<int, string>.New("").ReplaceLeftLazy(Get2));
+        Assert.That.HasLeft(2.0f, Either<int, string>.New(4).ReplaceLeftLazy(Get2.Invoke));
+        Assert.That.HasRight("", Either<int, string>.New("").ReplaceLeftLazy(Get2.Invoke));
     }
     #endregion
 
@@ -44,7 +44,7 @@ public class ReplaceTest
     public void TestReplace()
     {
         Assert.That.HasLeft(2.0, Either<int, string>.New(4).Replace(2.0, DateTime.Now));
-        Assert.That.HasRight(NewMillennium, Either<int, string>.New("").Replace(2.0, NewMillennium));
+        Assert.That.HasRight(Millennium3, Either<int, string>.New("").Replace(2.0, Millennium3));
     }
     #endregion
 
@@ -56,8 +56,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceLazyLeft()
     {
-        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLazyLeft(Get2, DateTime.Now));
-        Assert.That.HasRight(NewMillennium, Either<int, string>.New("").ReplaceLazyLeft(Get2, NewMillennium));
+        Assert.That.HasLeft(2.0f, Either<int, string>.New(4).ReplaceLazyLeft(Get2.Invoke, DateTime.Now));
+        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceLazyLeft(Get2.Invoke, Millennium3));
     }
 
     /// <summary>
@@ -67,8 +67,10 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceLazy()
     {
-        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLazy(Get2, GetNewMillennium));
-        Assert.That.HasRight(NewMillennium, Either<int, string>.New("rr").ReplaceLazy(Get2, GetNewMillennium));
+        Assert.That.HasLeft(2.0f, Either<int, string>.New(4).ReplaceLazy(Get2.Invoke, GetMillennium3.Invoke));
+        Assert.That.HasRight(
+            Millennium3,
+            Either<int, string>.New("rr").ReplaceLazy(Get2.Invoke, GetMillennium3.Invoke));
     }
 
     /// <summary>
@@ -78,8 +80,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceLazyRight()
     {
-        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLazyRight(2.0, GetNewMillennium));
-        Assert.That.HasRight(NewMillennium, Either<int, string>.New("").ReplaceLazyRight(2.0, GetNewMillennium));
+        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLazyRight(2.0, GetMillennium3.Invoke));
+        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceLazyRight(2.0, GetMillennium3.Invoke));
     }
     #endregion
     #endregion
@@ -101,8 +103,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceRightLazy()
     {
-        Assert.That.HasLeft(4, Either<int, string>.New(4).ReplaceRightLazy(GetNewMillennium));
-        Assert.That.HasRight(NewMillennium, Either<int, string>.New("").ReplaceRightLazy(GetNewMillennium));
+        Assert.That.HasLeft(4, Either<int, string>.New(4).ReplaceRightLazy(GetMillennium3.Invoke));
+        Assert.That.HasRight(Millennium3, Either<int, string>.New("").ReplaceRightLazy(GetMillennium3.Invoke));
     }
     #endregion
     #endregion
@@ -111,18 +113,16 @@ public class ReplaceTest
     /// <summary>
     /// A factory method that gets the number 2.
     /// </summary>
-    /// <returns></returns>
-    private static double Get2() => 2;
+    private static readonly FunctionOptions<float> Get2 = new(() => 2);
 
     /// <summary>
-    /// A factory method that gets the first second of the new millennium.
+    /// A factory method that gets the first instant of the third millennium.
     /// </summary>
-    /// <returns></returns>
-    private static DateTime GetNewMillennium() => NewMillennium;
+    private static readonly FunctionOptions<DateTime> GetMillennium3 = new(() => Millennium3);
 
     /// <summary>
-    /// The first second of the new millennium.
+    /// The first instant of the third millennium.
     /// </summary>
-    private static readonly DateTime NewMillennium = DateTime.Parse("January 1, 2000");
+    private static readonly DateTime Millennium3 = DateTime.Parse("January 1, 2000");
     #endregion
 }
