@@ -69,185 +69,31 @@ public class WhereTest
     #endregion
 
     #region Either Side
-    #region Instance
-    #region Enumerable
     /// <summary>
     /// Tests the <see cref="Either{TLeft, TRight}.Where(Func{TLeft, bool}, Func{TRight, bool})"/> method.
     /// </summary>
     [TestMethod]
-    public void TestWhere_Enumerable()
+    public void TestWhere()
     {
         Assert.That.SequenceEqual(new[] { 2 }, Either<string, int>.New(2).Where(LengthIsEven, IsEven));
         Assert.IsFalse(Either<string, int>.New(3).Where(LengthIsEven, IsEven).Cast<object>().Any());
         Assert.That.SequenceEqual(new[] { "" }, Either<string, int>.New("").Where(LengthIsEven, IsEven));
         Assert.IsFalse(Either<string, int>.New(" ").Where(LengthIsEven, IsEven).Cast<object>().Any());
     }
-    #endregion
 
-    #region Either
-    #region Eager
-    /// <summary>
-    /// Tests the
-    /// <see cref="Either{TLeft, TRight}.Where(Func{TLeft, bool}, TRight, Func{TRight, bool}, TLeft)"/> method.
-    /// </summary>
-    [TestMethod]
-    public void TestWhere_Either_Eager()
-    {
-        Assert.That.HasLeft(2, Either<int, string>.New(2).Where(IsEven, "nn", LengthIsEven, 4));
-        Assert.That.HasRight("", Either<int, string>.New("").Where(IsEven, "nn", LengthIsEven, 4));
-        Assert.That.HasLeft(4, Either<int, string>.New("f").Where(IsEven, "nn", LengthIsEven, 4));
-        Assert.That.HasRight("nn", Either<int, string>.New(3).Where(IsEven, "nn", LengthIsEven, 4));
-    }
-    #endregion
-
-    #region Lazy
-    /// <summary>
-    /// Tests the
-    /// <see cref="Either{TLeft, TRight}.Where(Func{TLeft, bool}, TRight, Func{TRight, bool}, Func{TLeft})"/>
-    /// method.
-    /// </summary>
-    [TestMethod]
-    public void TestWhere_Either_LazyLeftOnly()
-    {
-        Assert.That.HasLeft(2, Either<int, string>.New(2).Where(IsEven, "nn", LengthIsEven, Four));
-        Assert.That.HasRight("", Either<int, string>.New("").Where(IsEven, "nn", LengthIsEven, Four));
-        Assert.That.HasLeft(4, Either<int, string>.New("f").Where(IsEven, "nn", LengthIsEven, Four));
-        Assert.That.HasRight("nn", Either<int, string>.New(3).Where(IsEven, "nn", LengthIsEven, Four));
-    }
-
-    /// <summary>
-    /// Tests the
-    /// <see cref="Either{TLeft, TRight}.Where(Func{TLeft, bool}, Func{TRight}, Func{TRight, bool}, TLeft)"/> method.
-    /// </summary>
-    [TestMethod]
-    public void TestWhere_Either_LazyRightOnly()
-    {
-        Assert.That.HasLeft(2, Either<int, string>.New(2).Where(IsEven, NN, LengthIsEven, 4));
-        Assert.That.HasRight("", Either<int, string>.New("").Where(IsEven, NN, LengthIsEven, 4));
-        Assert.That.HasLeft(4, Either<int, string>.New("f").Where(IsEven, NN, LengthIsEven, 4));
-        Assert.That.HasRight("nn", Either<int, string>.New(3).Where(IsEven, NN, LengthIsEven, 4));
-    }
-
-    /// <summary>
-    /// Tests the
-    /// <see cref="Either{TLeft, TRight}.Where(Func{TLeft, bool}, Func{TRight}, Func{TRight, bool}, Func{TLeft})"/>
-    /// method.
-    /// </summary>
-    [TestMethod]
-    public void TestWhere_Either_LazyBothSides()
-    {
-        Assert.That.HasLeft(2, Either<int, string>.New(2).Where(IsEven, NN, LengthIsEven, Four));
-        Assert.That.HasRight("", Either<int, string>.New("").Where(IsEven, NN, LengthIsEven, Four));
-        Assert.That.HasLeft(4, Either<int, string>.New("f").Where(IsEven, NN, LengthIsEven, Four));
-        Assert.That.HasRight("nn", Either<int, string>.New(3).Where(IsEven, NN, LengthIsEven, Four));
-    }
-    #endregion
-    #endregion
-    #endregion
-
-    #region Extension
     /// <summary>
     /// Tests the
     /// <see cref="EitherExtensions.Where{TLeft, TRight, TParent}(Either{TLeft, TRight}, Func{TParent, bool})"/>
     /// method.
     /// </summary>
     [TestMethod]
-    public void TestWhereExtension_Enumerable()
+    public void TestWhereExtension()
     {
         Assert.That.SequenceEqual(new[] { PersonalEmail }, Either<Email, Phone>.New(PersonalEmail).Where(IsPersonal));
         Assert.IsFalse(Either<Email, Phone>.New(NonPersonalEmail).Where(IsPersonal).Any());
         Assert.That.SequenceEqual(new[] { PersonalPhone }, Either<Email, Phone>.New(PersonalPhone).Where(IsPersonal));
         Assert.IsFalse(Either<Email, Phone>.New(NonPersonalPhone).Where(IsPersonal).Any());
     }
-
-    /// <summary>
-    /// Tests the
-    /// <see cref="EitherExtensions.Where{TLeft, TRight, TParent}(in Either{TLeft, TRight}, Func{TParent, bool}, TLeft, TRight)"/>
-    /// method.
-    /// </summary>
-    [TestMethod]
-    public void TestWhereExtension_Either()
-    {
-        Assert.That.HasLeft(
-            PersonalEmail,
-            Either<Email, Phone>.New(PersonalEmail).Where(IsPersonal, CompanyEmail, CompanyPhone));
-        Assert.That.HasRight(
-            CompanyPhone,
-            Either<Email, Phone>.New(NonPersonalEmail).Where(IsPersonal, CompanyEmail, CompanyPhone));
-        Assert.That.HasRight(
-            PersonalPhone,
-            Either<Email, Phone>.New(PersonalPhone).Where(IsPersonal, CompanyEmail, CompanyPhone));
-        Assert.That.HasLeft(
-            CompanyEmail,
-            Either<Email, Phone>.New(NonPersonalPhone).Where(IsPersonal, CompanyEmail, CompanyPhone));
-    }
-
-    /// <summary>
-    /// Tests the
-    /// <see cref="EitherExtensions.Where{TLeft, TRight, TParent}(in Either{TLeft, TRight}, Func{TParent, bool}, Func{TLeft}, TRight)"/>
-    /// method.
-    /// </summary>
-    [TestMethod]
-    public void TestWhereExtension_Either_LazyLeftOnly()
-    {
-        Assert.That.HasLeft(
-            PersonalEmail,
-            Either<Email, Phone>.New(PersonalEmail).Where(IsPersonal, GetCompanyEmail, CompanyPhone));
-        Assert.That.HasRight(
-            CompanyPhone,
-            Either<Email, Phone>.New(NonPersonalEmail).Where(IsPersonal, GetCompanyEmail, CompanyPhone));
-        Assert.That.HasRight(
-            PersonalPhone,
-            Either<Email, Phone>.New(PersonalPhone).Where(IsPersonal, GetCompanyEmail, CompanyPhone));
-        Assert.That.HasLeft(
-            CompanyEmail,
-            Either<Email, Phone>.New(NonPersonalPhone).Where(IsPersonal, GetCompanyEmail, CompanyPhone));
-    }
-
-    /// <summary>
-    /// Tests the
-    /// <see cref="EitherExtensions.Where{TLeft, TRight, TParent}(in Either{TLeft, TRight}, Func{TParent, bool}, TLeft, Func{TRight})"/>
-    /// method.
-    /// </summary>
-    [TestMethod]
-    public void TestWhereExtension_Either_LazyRightOnly()
-    {
-        Assert.That.HasLeft(
-            PersonalEmail,
-            Either<Email, Phone>.New(PersonalEmail).Where(IsPersonal, CompanyEmail, GetCompanyPhone));
-        Assert.That.HasRight(
-            CompanyPhone,
-            Either<Email, Phone>.New(NonPersonalEmail).Where(IsPersonal, CompanyEmail, GetCompanyPhone));
-        Assert.That.HasRight(
-            PersonalPhone,
-            Either<Email, Phone>.New(PersonalPhone).Where(IsPersonal, CompanyEmail, GetCompanyPhone));
-        Assert.That.HasLeft(
-            CompanyEmail,
-            Either<Email, Phone>.New(NonPersonalPhone).Where(IsPersonal, CompanyEmail, GetCompanyPhone));
-    }
-
-    /// <summary>
-    /// Tests the
-    /// <see cref="EitherExtensions.Where{TLeft, TRight, TParent}(in Either{TLeft, TRight}, Func{TParent, bool}, Func{TLeft}, Func{TRight})"/>
-    /// method.
-    /// </summary>
-    [TestMethod]
-    public void TestWhereExtension_Either_LazyBothSides()
-    {
-        Assert.That.HasLeft(
-            PersonalEmail,
-            Either<Email, Phone>.New(PersonalEmail).Where(IsPersonal, GetCompanyEmail, GetCompanyPhone));
-        Assert.That.HasRight(
-            CompanyPhone,
-            Either<Email, Phone>.New(NonPersonalEmail).Where(IsPersonal, GetCompanyEmail, GetCompanyPhone));
-        Assert.That.HasRight(
-            PersonalPhone,
-            Either<Email, Phone>.New(PersonalPhone).Where(IsPersonal, GetCompanyEmail, GetCompanyPhone));
-        Assert.That.HasLeft(
-            CompanyEmail,
-            Either<Email, Phone>.New(NonPersonalPhone).Where(IsPersonal, GetCompanyEmail, GetCompanyPhone));
-    }
-    #endregion
     #endregion
 
     #region Right
