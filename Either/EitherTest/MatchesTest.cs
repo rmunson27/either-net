@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace RemTest.Core.Utilities.Monads;
 
 /// <summary>
-/// Tests the <see cref="Either{TLeft, TRight}.Matches(Func{TLeft, bool}, Func{TRight, bool})"/> and side-specific
+/// Tests the <see cref="Either{TLeft, TRight}.EitherMatches(Func{TLeft, bool}, Func{TRight, bool})"/> and side-specific
 /// analogs.
 /// </summary>
 [TestClass]
@@ -25,15 +25,15 @@ public class MatchesTest
     }
 
     /// <summary>
-    /// Tests the <see cref="Either{TLeft, TRight}.Matches(Func{TLeft, bool}, Func{TRight, bool})"/> method.
+    /// Tests the <see cref="Either{TLeft, TRight}.EitherMatches(Func{TLeft, bool}, Func{TRight, bool})"/> method.
     /// </summary>
     [TestMethod]
-    public void TestMatches()
+    public void TestEitherMatches()
     {
-        Assert.IsTrue(Either<int, string>.New(4).Matches(IsEven, IsLengthEven));
-        Assert.IsTrue(Either<int, string>.New("").Matches(IsEven, IsLengthEven));
-        Assert.IsFalse(Either<int, string>.New(3).Matches(IsEven, IsLengthEven));
-        Assert.IsFalse(Either<int, string>.New(".").Matches(IsEven, IsLengthEven));
+        Assert.IsTrue(Either<int, string>.New(4).EitherMatches(IsEven, IsLengthEven));
+        Assert.IsTrue(Either<int, string>.New("").EitherMatches(IsEven, IsLengthEven));
+        Assert.IsFalse(Either<int, string>.New(3).EitherMatches(IsEven, IsLengthEven));
+        Assert.IsFalse(Either<int, string>.New(".").EitherMatches(IsEven, IsLengthEven));
     }
 
     /// <summary>

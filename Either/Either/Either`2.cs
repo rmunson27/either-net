@@ -1405,7 +1405,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="rightPredicate"></param>
     /// <returns></returns>
     [InstanceNotDefault]
-    public bool Matches(Func<TLeft, bool> leftPredicate, Func<TRight, bool> rightPredicate)
+    public bool EitherMatches(Func<TLeft, bool> leftPredicate, Func<TRight, bool> rightPredicate)
         => IsRight ? rightPredicate(_right) : leftPredicate(_left);
 
     /// <summary>
