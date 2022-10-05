@@ -81,6 +81,10 @@ public class ReplaceTest
         Assert.That.HasLeft(
             LeftReplacement,
             await LeftEither.ReplaceLeftLazyAsync(LeftReplacer.InvokeAsync).ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            RightValue,
+            await RightEither.ReplaceLeftLazyAsync(LeftReplacer.InvokeAsync).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -94,6 +98,10 @@ public class ReplaceTest
         Assert.That.HasLeft(
             LeftReplacement,
             await LeftEither.ReplaceLeftLazyAsync(LeftReplacer.InvokeCancellableAsync).ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            RightValue,
+            await RightEither.ReplaceLeftLazyAsync(LeftReplacer.InvokeCancellableAsync).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -108,6 +116,13 @@ public class ReplaceTest
                 (e, ct) => e.ReplaceLeftLazyAsync(LeftReplacer.InvokeCancellableAsync, ct),
                 LeftEither)
             .ConfigureAwait(false);
+
+        Assert.That.HasRight(
+            RightValue,
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.ReplaceLeftLazyAsync(LeftReplacer.InvokeCancellableAsync, ct),
+                    RightEither)
+                .ConfigureAwait(false));
     }
     #endregion Asynchronous
     #endregion
@@ -612,6 +627,10 @@ public class ReplaceTest
     [TestMethod]
     public async Task TestReplaceRightLazyAsync_NonCancellable()
     {
+        Assert.That.HasLeft(
+            LeftValue,
+            await LeftEither.ReplaceRightLazyAsync(RightReplacer.InvokeAsync).ConfigureAwait(false));
+
         Assert.That.HasRight(
             RightReplacement,
             await RightEither.ReplaceRightLazyAsync(RightReplacer.InvokeAsync).ConfigureAwait(false));
@@ -625,6 +644,10 @@ public class ReplaceTest
     [TestMethod]
     public async Task TestReplaceRightLazyAsync_Cancellable_NoCancellation()
     {
+        Assert.That.HasLeft(
+            LeftValue,
+            await LeftEither.ReplaceRightLazyAsync(RightReplacer.InvokeCancellableAsync).ConfigureAwait(false));
+
         Assert.That.HasRight(
             RightReplacement,
             await RightEither.ReplaceRightLazyAsync(RightReplacer.InvokeCancellableAsync).ConfigureAwait(false));
@@ -638,6 +661,13 @@ public class ReplaceTest
     [TestMethod]
     public async Task TestReplaceRightLazyAsync_Cancellable_Cancellation()
     {
+        Assert.That.HasLeft(
+            LeftValue,
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.ReplaceRightLazyAsync(RightReplacer.InvokeCancellableAsync, ct),
+                    LeftEither)
+                .ConfigureAwait(false));
+
         await Assert.That.IsCanceledAsync(
                 (e, ct) => e.ReplaceRightLazyAsync(RightReplacer.InvokeCancellableAsync, ct),
                 RightEither)
