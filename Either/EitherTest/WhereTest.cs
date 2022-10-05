@@ -136,7 +136,6 @@ public class WhereTest
     #endregion
 
     #region Helpers
-    #region Methods And Functions
     #region Predicates
     /// <summary>
     /// Determines if the given integer is even.
@@ -168,45 +167,6 @@ public class WhereTest
     /// as a convenience.
     /// </remarks>
     private static readonly Func<ContactInformation, bool> IsPersonal = info => info.IsPersonal;
-    #endregion
-
-    #region Factories
-    /// <summary>
-    /// Gets the integer 4.
-    /// </summary>
-    /// <remarks>
-    /// This factory is used internally to test the methods.
-    /// </remarks>
-    /// <returns>4.</returns>
-    private static int Four() => 4;
-
-    /// <summary>
-    /// Gets the string "nn".
-    /// </summary>
-    /// <remarks>
-    /// This factory is used internally to test the methods.
-    /// </remarks>
-    /// <returns>"nn".</returns>
-    private static string NN() => "nn";
-
-    /// <summary>
-    /// Gets the company email stored in this class.
-    /// </summary>
-    /// <remarks>
-    /// This factory is used internally to test the methods.
-    /// </remarks>
-    /// <returns></returns>
-    private static Email GetCompanyEmail() => CompanyEmail;
-
-    /// <summary>
-    /// Gets the company phone stored in this class.
-    /// </summary>
-    /// <remarks>
-    /// This factory is used internally to test the methods.
-    /// </remarks>
-    /// <returns></returns>
-    private static Phone GetCompanyPhone() => CompanyPhone;
-    #endregion
     #endregion
 
     #region Types
