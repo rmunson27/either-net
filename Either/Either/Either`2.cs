@@ -324,6 +324,23 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <returns></returns>
     public override int GetHashCode()
         => IsRight ? HashCode.Combine(true, _right) : HashCode.Combine(false, _left);
+
+    /// <summary>
+    /// Gets a hash code for the current instance, 
+    /// </summary>
+    /// <param name="leftComparer">
+    /// An <see cref="IEqualityComparer{T}"/> to use to get hash codes for <typeparamref name="TLeft"/> instances, or
+    /// <see langword="null"/> to use the default comparer for type <typeparamref name="TLeft"/>.
+    /// </param>
+    /// <param name="rightComparer">
+    /// An <see cref="IEqualityComparer{T}"/> to use to get hash codes for <typeparamref name="TRight"/> instances, or
+    /// <see langword="null"/> to use the default comparer for type <typeparamref name="TRight"/>.
+    /// </param>
+    /// <returns></returns>
+    public int GetHashCode(IEqualityComparer<TLeft>? leftComparer, IEqualityComparer<TRight>? rightComparer)
+        => IsRight
+            ? HashCode.Combine(true, rightComparer.DefaultIfNull().GetHashCode(_right))
+            : HashCode.Combine(false, leftComparer.DefaultIfNull().GetHashCode(_left));
     #endregion
 
     #region Factories
