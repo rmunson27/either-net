@@ -73,7 +73,7 @@ public class WhereTest
     /// Tests the <see cref="Either{TLeft, TRight}.WhereEither(Func{TLeft, bool}, Func{TRight, bool})"/> method.
     /// </summary>
     [TestMethod]
-    public void TestWhere()
+    public void TestWhereEither()
     {
         Assert.That.SequenceEqual(new[] { 2 }, Either<string, int>.New(2).WhereEither(LengthIsEven, IsEven));
         Assert.IsFalse(Either<string, int>.New(3).WhereEither(LengthIsEven, IsEven).Cast<object>().Any());
@@ -87,7 +87,7 @@ public class WhereTest
     /// method.
     /// </summary>
     [TestMethod]
-    public void TestWhereExtension()
+    public void TestWhereEitherExtension()
     {
         Assert.That.SequenceEqual(new[] { PersonalEmail }, Either<Email, Phone>.New(PersonalEmail).WhereEither(IsPersonal));
         Assert.IsFalse(Either<Email, Phone>.New(NonPersonalEmail).WhereEither(IsPersonal).Any());

@@ -14,9 +14,24 @@ namespace RemTest.Core.Utilities.Monads.Auxiliary;
 internal sealed class FunctionOptions<TResult>
 {
     /// <summary>
-    /// The function for which options are being constructed.
+    /// Gets the synchronous option.
     /// </summary>
-    private Func<TResult> Delegate { get; }
+    public Func<TResult> Delegate => Invoke;
+
+    /// <summary>
+    /// Gets the asynchronous option.
+    /// </summary>
+    public Func<Task<TResult>> AsyncDelegate => InvokeAsync;
+
+    /// <summary>
+    /// Gets the cancellable asynchronous option.
+    /// </summary>
+    public Func<CancellationToken, Task<TResult>> CancellableAsyncDelegate => InvokeCancellableAsync;
+
+    /// <summary>
+    /// Gets the function for which options are being constructed.
+    /// </summary>
+    private Func<TResult> Function { get; }
 
     /// <summary>
     /// Constructs a new instance of the <see cref="FunctionOptions{TArg, TResult}"/> class set up to allow calls
@@ -25,20 +40,20 @@ internal sealed class FunctionOptions<TResult>
     /// <param name="Function"></param>
     public FunctionOptions(Func<TResult> Function)
     {
-        Delegate = Function;
+        this.Function = Function;
     }
 
     /// <summary>
     /// Calls the method synchronously.
     /// </summary>
     /// <returns></returns>
-    public TResult Invoke() => Delegate();
+    public TResult Invoke() => Function();
 
     /// <summary>
     /// Calls the method asynchronously.
     /// </summary>
     /// <returns></returns>
-    public Task<TResult> InvokeAsync() => Task.FromResult(Delegate());
+    public Task<TResult> InvokeAsync() => Task.FromResult(Function());
 
     /// <summary>
     /// Calls the method asynchronously with cancellation.
@@ -51,7 +66,7 @@ internal sealed class FunctionOptions<TResult>
     public async Task<TResult> InvokeCancellableAsync(CancellationToken cancellationToken)
     {
         await Task.Delay(AsyncTesting.CancellableDelegateDelay, cancellationToken).ConfigureAwait(false);
-        return Delegate();
+        return Function();
     }
 
     public static implicit operator Func<TResult>(FunctionOptions<TResult> opts) => opts.Invoke;
@@ -69,9 +84,24 @@ internal sealed class FunctionOptions<TResult>
 internal sealed class FunctionOptions<TArg, TResult>
 {
     /// <summary>
-    /// The function for which options are being constructed.
+    /// Gets the synchronous option.
     /// </summary>
-    private Func<TArg, TResult> Delegate { get; }
+    public Func<TArg, TResult> Delegate => Invoke;
+
+    /// <summary>
+    /// Gets the asynchronous option.
+    /// </summary>
+    public Func<TArg, Task<TResult>> AsyncDelegate => InvokeAsync;
+
+    /// <summary>
+    /// Gets the cancellable asynchronous option.
+    /// </summary>
+    public Func<TArg, CancellationToken, Task<TResult>> CancellableAsyncDelegate => InvokeCancellableAsync;
+
+    /// <summary>
+    /// Gets the function for which options are being constructed.
+    /// </summary>
+    private Func<TArg, TResult> Function { get; }
 
     /// <summary>
     /// Constructs a new instance of the <see cref="FunctionOptions{TArg, TResult}"/> class set up to allow calls
@@ -80,7 +110,7 @@ internal sealed class FunctionOptions<TArg, TResult>
     /// <param name="Function"></param>
     public FunctionOptions(Func<TArg, TResult> Function)
     {
-        Delegate = Function;
+        this.Function = Function;
     }
 
     /// <summary>
@@ -88,14 +118,14 @@ internal sealed class FunctionOptions<TArg, TResult>
     /// </summary>
     /// <param name="arg"></param>
     /// <returns></returns>
-    public TResult Invoke(TArg arg) => Delegate(arg);
+    public TResult Invoke(TArg arg) => Function(arg);
 
     /// <summary>
     /// Calls the method asynchronously.
     /// </summary>
     /// <param name="arg"></param>
     /// <returns></returns>
-    public Task<TResult> InvokeAsync(TArg arg) => Task.FromResult(Delegate(arg));
+    public Task<TResult> InvokeAsync(TArg arg) => Task.FromResult(Function(arg));
 
     /// <summary>
     /// Calls the method asynchronously with cancellation.
@@ -108,7 +138,7 @@ internal sealed class FunctionOptions<TArg, TResult>
     public async Task<TResult> InvokeCancellableAsync(TArg arg, CancellationToken cancellationToken)
     {
         await Task.Delay(AsyncTesting.CancellableDelegateDelay, cancellationToken).ConfigureAwait(false);
-        return Delegate(arg);
+        return Function(arg);
     }
 
     public static implicit operator Func<TArg, TResult>(FunctionOptions<TArg, TResult> opts) => opts.Invoke;
