@@ -1402,6 +1402,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     #endregion
 
     #region Predicates
+    #region Synchronous
     /// <summary>
     /// Determines whether or not the current instance contains a left value that matches the specified predicate.
     /// </summary>
@@ -1435,6 +1436,184 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <paramref name="predicate"/> or is left.
     /// </returns>
     public bool RightMatches(Func<TRight, bool> predicate) => IsRight && predicate(_right);
+    #endregion
+
+    #region Asynchronous
+    #region Left
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance contains a left value that matches the
+    /// specified predicate.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <returns>
+    /// A task wrapping <see langword="true"/> if the current instance wraps a left value that matches
+    /// <paramref name="predicateAsync"/>, or <see langword="false"/> if this instance either contains a left value
+    /// that does not match <paramref name="predicateAsync"/> or is right.
+    /// </returns>
+    [InstanceNotDefault]
+    public async Task<bool> LeftMatchesAsync(Func<TLeft, Task<bool>> predicateAsync)
+        => IsLeft && await predicateAsync(_left);
+
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance contains a left value that matches the
+    /// specified predicate.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>
+    /// A task wrapping <see langword="true"/> if the current instance wraps a left value that matches
+    /// <paramref name="predicateAsync"/>, or <see langword="false"/> if this instance either contains a left value
+    /// that does not match <paramref name="predicateAsync"/> or is right.
+    /// </returns>
+    [InstanceNotDefault]
+    public async Task<bool> LeftMatchesAsync(
+        Func<TLeft, CancellationToken, Task<bool>> predicateAsync, CancellationToken cancellationToken = default)
+        => IsLeft && await predicateAsync(_left, cancellationToken);
+    #endregion
+
+    #region Either Side
+    #region Left Async Only
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance comtains -either- a left value that matches the
+    /// specified left predicate -or- a right value that matches the specified right predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicate"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<bool> EitherMatchesAsync(
+        Func<TLeft, Task<bool>> leftPredicateAsync, Func<TRight, bool> rightPredicate)
+        => IsRight ? rightPredicate(_right) : await leftPredicateAsync(_left);
+
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance comtains -either- a left value that matches the
+    /// specified left predicate -or- a right value that matches the specified right predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicate"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<bool> EitherMatchesAsync(
+        Func<TLeft, CancellationToken, Task<bool>> leftPredicateAsync, Func<TRight, bool> rightPredicate,
+        CancellationToken cancellationToken = default)
+        => IsRight ? rightPredicate(_right) : await leftPredicateAsync(_left, cancellationToken);
+    #endregion
+
+    #region Both Async
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance contains a left value that matches the
+    /// specified predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <returns></returns>
+    public async Task<bool> EitherMatchesAsync(
+        Func<TLeft, Task<bool>> leftPredicateAsync, Func<TRight, Task<bool>> rightPredicateAsync)
+        => IsRight ? await rightPredicateAsync(_right) : await leftPredicateAsync(_left);
+
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance contains a left value that matches the
+    /// specified predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> EitherMatchesAsync(
+        Func<TLeft, CancellationToken, Task<bool>> leftPredicateAsync, Func<TRight, Task<bool>> rightPredicateAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? await rightPredicateAsync(_right) : await leftPredicateAsync(_left, cancellationToken);
+
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance contains a left value that matches the
+    /// specified predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> EitherMatchesAsync(
+        Func<TLeft, Task<bool>> leftPredicateAsync, Func<TRight, CancellationToken, Task<bool>> rightPredicateAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? await rightPredicateAsync(_right, cancellationToken) : await leftPredicateAsync(_left);
+
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance contains a left value that matches the
+    /// specified predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> EitherMatchesAsync(
+        Func<TLeft, CancellationToken, Task<bool>> leftPredicateAsync,
+        Func<TRight, CancellationToken, Task<bool>> rightPredicateAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight
+            ? await rightPredicateAsync(_right, cancellationToken)
+            : await leftPredicateAsync(_left, cancellationToken);
+    #endregion
+
+    #region Right Async Only
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance comtains -either- a left value that matches the
+    /// specified left predicate -or- a right value that matches the specified right predicate.
+    /// </summary>
+    /// <param name="leftPredicate"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<bool> EitherMatchesAsync(
+        Func<TLeft, bool> leftPredicate, Func<TRight, Task<bool>> rightPredicateAsync)
+        => IsRight ? await rightPredicateAsync(_right) : leftPredicate(_left);
+
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance comtains -either- a left value that matches the
+    /// specified left predicate -or- a right value that matches the specified right predicate.
+    /// </summary>
+    /// <param name="leftPredicate"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<bool> EitherMatchesAsync(
+        Func<TLeft, bool> leftPredicate, Func<TRight, CancellationToken, Task<bool>> rightPredicateAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? await rightPredicateAsync(_right, cancellationToken) : leftPredicate(_left);
+    #endregion
+    #endregion
+
+    #region Right
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance contains a right value that matches the
+    /// specified predicate.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <returns>
+    /// A task wrapping <see langword="true"/> if the current instance wraps a right value that matches
+    /// <paramref name="predicateAsync"/>, or <see langword="false"/> if this instance either contains a right value
+    /// that does not match <paramref name="predicateAsync"/> or is left.
+    /// </returns>
+    public async Task<bool> RightMatchesAsync(Func<TRight, Task<bool>> predicateAsync)
+        => IsRight && await predicateAsync(_right);
+
+    /// <summary>
+    /// Asynchronously determines whether or not the current instance contains a right value that matches the
+    /// specified predicate.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>
+    /// A task wrapping <see langword="true"/> if the current instance wraps a right value that matches
+    /// <paramref name="predicateAsync"/>, or <see langword="false"/> if this instance either contains a right value
+    /// that does not match <paramref name="predicateAsync"/> or is left.
+    /// </returns>
+    public async Task<bool> RightMatchesAsync(
+        Func<TRight, CancellationToken, Task<bool>> predicateAsync, CancellationToken cancellationToken = default)
+        => IsRight && await predicateAsync(_right, cancellationToken);
+    #endregion
+    #endregion
     #endregion
 
     #region ToString
