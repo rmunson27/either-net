@@ -89,10 +89,14 @@ public class WhereTest
     [TestMethod]
     public void TestWhereEitherExtension()
     {
-        Assert.That.SequenceEqual(new[] { PersonalEmail }, Either<Email, Phone>.New(PersonalEmail).WhereEither(IsPersonal));
-        Assert.IsFalse(Either<Email, Phone>.New(NonPersonalEmail).WhereEither(IsPersonal).Any());
-        Assert.That.SequenceEqual(new[] { PersonalPhone }, Either<Email, Phone>.New(PersonalPhone).WhereEither(IsPersonal));
-        Assert.IsFalse(Either<Email, Phone>.New(NonPersonalPhone).WhereEither(IsPersonal).Any());
+        Assert.That.SequenceEqual(
+            new[] { PersonalEmail }, Either<Email, Phone>.New(PersonalEmail).WhereEither(IsPersonal.Delegate));
+        Assert.IsFalse(
+            Either<Email, Phone>.New(NonPersonalEmail).WhereEither(IsPersonal.Delegate).Any());
+        Assert.That.SequenceEqual(
+            new[] { PersonalPhone }, Either<Email, Phone>.New(PersonalPhone).WhereEither(IsPersonal.Delegate));
+        Assert.IsFalse(
+            Either<Email, Phone>.New(NonPersonalPhone).WhereEither(IsPersonal.Delegate).Any());
     }
     #endregion
 
@@ -143,9 +147,8 @@ public class WhereTest
     /// <remarks>
     /// This predicate is used internally to test the methods.
     /// </remarks>
-    /// <param name="i"></param>
     /// <returns></returns>
-    private static bool IsEven(int i) => i % 2 == 0;
+    private static readonly FunctionOptions<int, bool> IsEven = new(i => i % 2 == 0);
 
     /// <summary>
     /// Determines if the length of the given string is even.
@@ -153,9 +156,8 @@ public class WhereTest
     /// <remarks>
     /// This predicate is used internally to test the methods.
     /// </remarks>
-    /// <param name="s"></param>
     /// <returns></returns>
-    private static bool LengthIsEven(string s) => s.Length % 2 == 0;
+    private static readonly FunctionOptions<string, bool> LengthIsEven = new(s => s.Length % 2 == 0);
 
     /// <summary>
     /// A function that determines whether or not the contact info passed in is personal.
@@ -166,7 +168,7 @@ public class WhereTest
     /// The delegate definition is needed to perform the requisite tests with type inference, so is defined this way
     /// as a convenience.
     /// </remarks>
-    private static readonly Func<ContactInformation, bool> IsPersonal = info => info.IsPersonal;
+    private static readonly FunctionOptions<ContactInformation, bool> IsPersonal = new(ci => ci.IsPersonal);
     #endregion
 
     #region Types
