@@ -139,7 +139,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <see langword="true"/> if the current instance contains the supplied left value or the supplied right value,
     /// or <see langword="false"/> if it contains neither.
     /// </returns>
-    public bool Contains(
+    public bool ContainsEither(
         TLeft left, TRight right,
         IEqualityComparer<TLeft>? leftComparer = null, IEqualityComparer<TRight>? rightComparer = null)
         => IsRight

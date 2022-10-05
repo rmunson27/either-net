@@ -8,7 +8,7 @@ namespace RemTest.Core.Utilities.Monads;
 
 /// <summary>
 /// Tests the
-/// <see cref="Either{TLeft, TRight}.Contains(TLeft, TRight, IEqualityComparer{TLeft}?, IEqualityComparer{TRight}?)"/>
+/// <see cref="Either{TLeft, TRight}.ContainsEither(TLeft, TRight, IEqualityComparer{TLeft}?, IEqualityComparer{TRight}?)"/>
 /// method and side-specific analogs.
 /// </summary>
 [TestClass]
@@ -53,23 +53,23 @@ public class ContainsTest
 
     /// <summary>
     /// Tests the
-    /// <see cref="Either{TLeft, TRight}.Contains(TLeft, TRight, IEqualityComparer{TLeft}?, IEqualityComparer{TRight}?)"/>
+    /// <see cref="Either{TLeft, TRight}.ContainsEither(TLeft, TRight, IEqualityComparer{TLeft}?, IEqualityComparer{TRight}?)"/>
     /// method.
     /// </summary>
     [TestMethod]
-    public void TestContains()
+    public void TestContainsEither()
     {
         // Default equality comparers
-        Assert.IsTrue(Either<int, string>.New(3).Contains(3, ""));
-        Assert.IsTrue(Either<int, string>.New("").Contains(3, ""));
-        Assert.IsFalse(Either<int, string>.New(4).Contains(3, ""));
-        Assert.IsFalse(Either<int, string>.New("S").Contains(3, ""));
+        Assert.IsTrue(Either<int, string>.New(3).ContainsEither(3, ""));
+        Assert.IsTrue(Either<int, string>.New("").ContainsEither(3, ""));
+        Assert.IsFalse(Either<int, string>.New(4).ContainsEither(3, ""));
+        Assert.IsFalse(Either<int, string>.New("S").ContainsEither(3, ""));
 
         // Speciied equality comparers
-        Assert.IsTrue(Either<int, string>.New(5).Contains(3, "sss", IntParityComparer, StringLengthComparer));
-        Assert.IsTrue(Either<int, string>.New("444").Contains(3, "sss", IntParityComparer, StringLengthComparer));
-        Assert.IsFalse(Either<int, string>.New(4).Contains(3, "sss", IntParityComparer, StringLengthComparer));
-        Assert.IsFalse(Either<int, string>.New("ss").Contains(3, "sss", IntParityComparer, StringLengthComparer));
+        Assert.IsTrue(Either<int, string>.New(5).ContainsEither(3, "sss", IntParityComparer, StringLengthComparer));
+        Assert.IsTrue(Either<int, string>.New("444").ContainsEither(3, "sss", IntParityComparer, StringLengthComparer));
+        Assert.IsFalse(Either<int, string>.New(4).ContainsEither(3, "sss", IntParityComparer, StringLengthComparer));
+        Assert.IsFalse(Either<int, string>.New("ss").ContainsEither(3, "sss", IntParityComparer, StringLengthComparer));
     }
 
     /// <summary>
