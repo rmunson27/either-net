@@ -1052,9 +1052,36 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <returns></returns>
     public Either<TNewLeft, TRight> ReplaceLeftLazy<TNewLeft>(Func<TNewLeft> newLeftFactory)
         => IsRight ? new(_right) : new(newLeftFactory());
+
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value of this instance on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <param name="newLeftFactoryAsync"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TRight>> ReplaceLeftLazyAsync<TNewLeft>(
+        Func<Task<TNewLeft>> newLeftFactoryAsync)
+        => IsRight ? _right : await newLeftFactoryAsync();
+
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value of this instance on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <param name="newLeftFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TRight>> ReplaceLeftLazyAsync<TNewLeft>(
+        Func<CancellationToken, Task<TNewLeft>> newLeftFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? _right : await newLeftFactoryAsync(cancellationToken);
     #endregion
 
     #region Both Sides
+    #region Synchronous
     /// <summary>
     /// Creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left value replaced
     /// with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or the right
@@ -1098,6 +1125,214 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
         => IsRight ? newRightFactory() : newLeft;
     #endregion
 
+    #region Only Left Asynchronous
+    #region Right Eager
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value replaced with the supplied <typeparamref name="TNewRight"/> instance on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeftFactoryAsync"></param>
+    /// <param name="newRight"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        Func<Task<TNewLeft>> newLeftFactoryAsync, TNewRight newRight)
+        => IsRight ? newRight : await newLeftFactoryAsync();
+
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value replaced with the supplied <typeparamref name="TNewRight"/> instance on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeftFactoryAsync"></param>
+    /// <param name="newRight"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        Func<CancellationToken, Task<TNewLeft>> newLeftFactoryAsync, TNewRight newRight,
+        CancellationToken cancellationToken = default)
+        => IsRight ? newRight : await newLeftFactoryAsync(cancellationToken);
+    #endregion Right Eager
+
+    #region Right Lazy
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory
+    /// on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeftFactoryAsync"></param>
+    /// <param name="newRightFactory"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        Func<Task<TNewLeft>> newLeftFactoryAsync, Func<TNewRight> newRightFactory)
+        => IsRight ? newRightFactory() : await newLeftFactoryAsync();
+
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory
+    /// on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeftFactoryAsync"></param>
+    /// <param name="newRightFactory"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        Func<CancellationToken, Task<TNewLeft>> newLeftFactoryAsync, Func<TNewRight> newRightFactory,
+        CancellationToken cancellationToken = default)
+        => IsRight ? newRightFactory() : await newLeftFactoryAsync(cancellationToken);
+    #endregion Right Lazy
+    #endregion Only Left Asynchronous
+
+    #region Only Right Asynchronous
+    #region Left Eager
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the supplied <typeparamref name="TNewLeft"/> instance on the left, or the right value
+    /// replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeft"></param>
+    /// <param name="newRightFactoryAsync"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        TNewLeft newLeft, Func<Task<TNewRight>> newRightFactoryAsync)
+        => IsRight ? await newRightFactoryAsync() : newLeft;
+
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the supplied <typeparamref name="TNewLeft"/> instance on the left, or the right value
+    /// replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeft"></param>
+    /// <param name="newRightFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        TNewLeft newLeft, Func<CancellationToken, Task<TNewRight>> newRightFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? await newRightFactoryAsync(cancellationToken) : newLeft;
+    #endregion Left Eager
+
+    #region Left Lazy
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory
+    /// on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeftFactory"></param>
+    /// <param name="newRightFactoryAsync"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        Func<TNewLeft> newLeftFactory, Func<Task<TNewRight>> newRightFactoryAsync)
+        => IsRight ? await newRightFactoryAsync() : newLeftFactory();
+
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory
+    /// on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeftFactory"></param>
+    /// <param name="newRightFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        Func<TNewLeft> newLeftFactory, Func<CancellationToken, Task<TNewRight>> newRightFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? await newRightFactoryAsync(cancellationToken) : newLeftFactory();
+    #endregion Left Lazy
+    #endregion Only Right Asynchronous
+
+    #region Both Asynchronous
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory
+    /// on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeftFactoryAsync"></param>
+    /// <param name="newRightFactoryAsync"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        Func<Task<TNewLeft>> newLeftFactoryAsync, Func<Task<TNewRight>> newRightFactoryAsync)
+        => IsRight ? await newRightFactoryAsync() : await newLeftFactoryAsync();
+
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory
+    /// on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeftFactoryAsync"></param>
+    /// <param name="newRightFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        Func<CancellationToken, Task<TNewLeft>> newLeftFactoryAsync,
+        Func<Task<TNewRight>> newRightFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? await newRightFactoryAsync() : await newLeftFactoryAsync(cancellationToken);
+
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory
+    /// on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeftFactoryAsync"></param>
+    /// <param name="newRightFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        Func<Task<TNewLeft>> newLeftFactoryAsync,
+        Func<CancellationToken, Task<TNewRight>> newRightFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? await newRightFactoryAsync(cancellationToken) : await newLeftFactoryAsync();
+
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the left
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewLeft"/> factory on the left, or
+    /// the right value replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory
+    /// on the right.
+    /// </summary>
+    /// <typeparam name="TNewLeft"></typeparam>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newLeftFactoryAsync"></param>
+    /// <param name="newRightFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TNewLeft, TNewRight>> ReplaceEitherLazyAsync<TNewLeft, TNewRight>(
+        Func<CancellationToken, Task<TNewLeft>> newLeftFactoryAsync,
+        Func<CancellationToken, Task<TNewRight>> newRightFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? await newRightFactoryAsync(cancellationToken) : await newLeftFactoryAsync(cancellationToken);
+    #endregion Both Asynchronous
+    #endregion Both Sides
+
     #region Right
     /// <summary>
     /// Creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the right value replaced
@@ -1109,6 +1344,31 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <returns></returns>
     public Either<TLeft, TNewRight> ReplaceRightLazy<TNewRight>(Func<TNewRight> newRightFactory)
         => IsRight ? new(newRightFactory()) : new(_left);
+
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the right
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory on the right,
+    /// or the left value of this instance on the left.
+    /// </summary>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newRightFactory"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TNewRight>> ReplaceRightLazyAsync<TNewRight>(Func<Task<TNewRight>> newRightFactory)
+        => IsRight ? await newRightFactory() : _left;
+
+    /// <summary>
+    /// Asynchronously creates a new <see cref="Either{TLeft, TRight}"/> equivalent to this instance with the right
+    /// value replaced with the result of calling the supplied <typeparamref name="TNewRight"/> factory on the right,
+    /// or the left value of this instance on the left.
+    /// </summary>
+    /// <typeparam name="TNewRight"></typeparam>
+    /// <param name="newRightFactory"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TNewRight>> ReplaceRightLazyAsync<TNewRight>(
+        Func<CancellationToken, Task<TNewRight>> newRightFactory,
+        CancellationToken cancellationToken = default)
+        => IsRight ? await newRightFactory(cancellationToken) : _left;
     #endregion
     #endregion
     #endregion
