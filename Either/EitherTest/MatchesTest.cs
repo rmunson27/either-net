@@ -13,15 +13,38 @@ namespace RemTest.Core.Utilities.Monads;
 [TestClass]
 public class MatchesTest
 {
+    #region Constants
+    /// <summary>
+    /// An <see cref="Either{TLeft, TRight}"/> containing an even integer on the left.
+    /// </summary>
+    private static readonly Either<int, string> EvenLeftEither = Either<int, string>.New(4);
+
+    /// <summary>
+    /// An <see cref="Either{TLeft, TRight}"/> containing an odd integer on the left.
+    /// </summary>
+    private static readonly Either<int, string> OddLeftEither = Either<int, string>.New(3);
+
+    /// <summary>
+    /// An <see cref="Either{TLeft, TRight}"/> containing an even-length string on the right.
+    /// </summary>
+    private static readonly Either<int, string> EvenLengthRightEither = Either<int, string>.New("");
+
+    /// <summary>
+    /// An <see cref="Either{TLeft, TRight}"/> containing an odd-length string on the right.
+    /// </summary>
+    private static readonly Either<int, string> OddLengthRightEither = Either<int, string>.New(".");
+    #endregion
+
+    #region Tests
     /// <summary>
     /// Tests the <see cref="Either{TLeft, TRight}.LeftMatches(Func{TLeft, bool})"/> method.
     /// </summary>
     [TestMethod]
     public void TestLeftMatches()
     {
-        Assert.IsTrue(Either<int, string>.New(4).LeftMatches(IsEven));
-        Assert.IsFalse(Either<int, string>.New(3).LeftMatches(IsEven));
-        Assert.IsFalse(Either<int, string>.New("").LeftMatches(IsEven));
+        Assert.IsTrue(EvenLeftEither.LeftMatches(IsEven));
+        Assert.IsFalse(OddLeftEither.LeftMatches(IsEven));
+        Assert.IsFalse(EvenLengthRightEither.LeftMatches(IsEven));
     }
 
     /// <summary>
@@ -30,10 +53,10 @@ public class MatchesTest
     [TestMethod]
     public void TestEitherMatches()
     {
-        Assert.IsTrue(Either<int, string>.New(4).EitherMatches(IsEven, IsLengthEven));
-        Assert.IsTrue(Either<int, string>.New("").EitherMatches(IsEven, IsLengthEven));
-        Assert.IsFalse(Either<int, string>.New(3).EitherMatches(IsEven, IsLengthEven));
-        Assert.IsFalse(Either<int, string>.New(".").EitherMatches(IsEven, IsLengthEven));
+        Assert.IsTrue(EvenLeftEither.EitherMatches(IsEven, IsLengthEven));
+        Assert.IsTrue(EvenLengthRightEither.EitherMatches(IsEven, IsLengthEven));
+        Assert.IsFalse(OddLeftEither.EitherMatches(IsEven, IsLengthEven));
+        Assert.IsFalse(OddLengthRightEither.EitherMatches(IsEven, IsLengthEven));
     }
 
     /// <summary>
@@ -42,20 +65,20 @@ public class MatchesTest
     [TestMethod]
     public void TestRightMatches()
     {
-        Assert.IsTrue(Either<string, int>.New(4).RightMatches(IsEven));
-        Assert.IsFalse(Either<string, int>.New(3).RightMatches(IsEven));
-        Assert.IsFalse(Either<string, int>.New("").RightMatches(IsEven));
+        Assert.IsTrue(EvenLengthRightEither.RightMatches(IsLengthEven));
+        Assert.IsFalse(OddLeftEither.RightMatches(IsLengthEven));
+        Assert.IsFalse(OddLengthRightEither.RightMatches(IsLengthEven));
     }
+    #endregion
 
+    #region Helper Predicates
     /// <summary>
     /// Determines whether or not the argument is even.
     /// </summary>
     /// <remarks>
     /// This predicate is used internally to test the relevant <see cref="Either{TLeft, TRight}"/> methods.
     /// </remarks>
-    /// <param name="i">The integer to determine the parity of.</param>
-    /// <returns>Whether or not the argument is even.</returns>
-    private static bool IsEven(int i) => i % 2 == 0;
+    private static readonly FunctionOptions<int, bool> IsEven = new(i => i % 2 == 0);
 
     /// <summary>
     /// Determines whether or not the argument has an even length.
@@ -65,5 +88,6 @@ public class MatchesTest
     /// </remarks>
     /// <param name="s"></param>
     /// <returns></returns>
-    private static bool IsLengthEven(string s) => s.Length % 2 == 0;
+    private static readonly FunctionOptions<string, bool> IsLengthEven = new(s => s.Length % 2 == 0);
+    #endregion
 }
