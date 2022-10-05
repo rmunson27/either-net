@@ -56,8 +56,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceLeft()
     {
-        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceLeft(2.0));
-        Assert.That.HasRight("", Either<int, string>.New("").ReplaceLeft(2.0));
+        Assert.That.HasLeft(LeftReplacement, LeftEither.ReplaceLeft(LeftReplacement));
+        Assert.That.HasRight(RightValue, RightEither.ReplaceLeft(LeftReplacement));
     }
 
     /// <summary>
@@ -66,8 +66,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceLeftLazy()
     {
-        Assert.That.HasLeft(2.0f, Either<int, string>.New(4).ReplaceLeftLazy(Get2.Invoke));
-        Assert.That.HasRight("", Either<int, string>.New("").ReplaceLeftLazy(Get2.Invoke));
+        Assert.That.HasLeft(LeftReplacement, LeftEither.ReplaceLeftLazy(LeftReplacer.Invoke));
+        Assert.That.HasRight(RightValue, RightEither.ReplaceLeftLazy(LeftReplacer.Invoke));
     }
     #endregion Synchronous
 
@@ -79,8 +79,8 @@ public class ReplaceTest
     public async Task TestReplaceLeftLazyAsync_NonCancellable()
     {
         Assert.That.HasLeft(
-            2.0f,
-            await Either<int, string>.New(4).ReplaceLeftLazyAsync(Get2.InvokeAsync).ConfigureAwait(false));
+            LeftReplacement,
+            await LeftEither.ReplaceLeftLazyAsync(LeftReplacer.InvokeAsync).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -92,8 +92,8 @@ public class ReplaceTest
     public async Task TestReplaceLeftLazyAsync_Cancellable_NoCancellation()
     {
         Assert.That.HasLeft(
-            2.0f,
-            await Either<int, string>.New(4).ReplaceLeftLazyAsync(Get2.InvokeCancellableAsync).ConfigureAwait(false));
+            LeftReplacement,
+            await LeftEither.ReplaceLeftLazyAsync(LeftReplacer.InvokeCancellableAsync).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -105,8 +105,8 @@ public class ReplaceTest
     public async Task TestReplaceLeftLazyAsync_Cancellable_Cancellation()
     {
         await Assert.That.IsCanceledAsync(
-                (e, ct) => e.ReplaceLeftLazyAsync(Get2.InvokeCancellableAsync, ct),
-                Either<int, string>.New(4))
+                (e, ct) => e.ReplaceLeftLazyAsync(LeftReplacer.InvokeCancellableAsync, ct),
+                LeftEither)
             .ConfigureAwait(false);
     }
     #endregion Asynchronous
@@ -120,8 +120,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceEither()
     {
-        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceEither(2.0, DateTime.Now));
-        Assert.That.HasRight(StartOfMillennium3, Either<int, string>.New("").ReplaceEither(2.0, StartOfMillennium3));
+        Assert.That.HasLeft(LeftReplacement, LeftEither.ReplaceEither(LeftReplacement, RightReplacement));
+        Assert.That.HasRight(RightReplacement, RightEither.ReplaceEither(LeftReplacement, RightReplacement));
     }
 
     /// <summary>
@@ -131,9 +131,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceEitherLazy_LazyLeftOnly()
     {
-        Assert.That.HasLeft(2.0f, Either<int, string>.New(4).ReplaceEitherLazy(Get2.Invoke, DateTime.Now));
-        Assert.That.HasRight(
-            StartOfMillennium3, Either<int, string>.New("").ReplaceEitherLazy(Get2.Invoke, StartOfMillennium3));
+        Assert.That.HasLeft(LeftReplacement, LeftEither.ReplaceEitherLazy(LeftReplacer.Invoke, RightReplacement));
+        Assert.That.HasRight(RightReplacement, RightEither.ReplaceEitherLazy(LeftReplacer.Invoke, RightReplacement));
     }
 
     /// <summary>
@@ -143,11 +142,9 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceEitherLazy()
     {
-        Assert.That.HasLeft(
-            2.0f, Either<int, string>.New(4).ReplaceEitherLazy(Get2.Invoke, GetStartOfMillennium3.Invoke));
+        Assert.That.HasLeft(LeftReplacement, LeftEither.ReplaceEitherLazy(LeftReplacer.Invoke, RightReplacer.Invoke));
         Assert.That.HasRight(
-            StartOfMillennium3,
-            Either<int, string>.New("rr").ReplaceEitherLazy(Get2.Invoke, GetStartOfMillennium3.Invoke));
+            RightReplacement, RightEither.ReplaceEitherLazy(LeftReplacer.Invoke, RightReplacer.Invoke));
     }
 
     /// <summary>
@@ -157,9 +154,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceEitherLazy_LazyRightOnly()
     {
-        Assert.That.HasLeft(2.0, Either<int, string>.New(4).ReplaceEitherLazy(2.0, GetStartOfMillennium3.Invoke));
-        Assert.That.HasRight(
-            StartOfMillennium3, Either<int, string>.New("").ReplaceEitherLazy(2.0, GetStartOfMillennium3.Invoke));
+        Assert.That.HasLeft(LeftReplacement, LeftEither.ReplaceEitherLazy(LeftReplacement, RightReplacer.Invoke));
+        Assert.That.HasRight(RightReplacement, RightEither.ReplaceEitherLazy(LeftReplacement, RightReplacer.Invoke));
     }
     #endregion Synchronous
 
@@ -176,14 +172,14 @@ public class ReplaceTest
     public async Task TestReplaceEitherLazyAsync_LazyLeftOnly_NonCancellable()
     {
         Assert.That.HasLeft(
-            2.0f,
-            await Either<int, string>.New(4).ReplaceEitherLazyAsync(Get2.InvokeAsync, StartOfMillennium3)
-                    .ConfigureAwait(false));
+            LeftReplacement,
+            await LeftEither.ReplaceEitherLazyAsync(LeftReplacer.InvokeAsync, RightReplacement)
+                .ConfigureAwait(false));
 
         Assert.That.HasRight(
-            StartOfMillennium3,
-            await Either<int, string>.New("   ").ReplaceEitherLazyAsync(Get2.InvokeAsync, StartOfMillennium3)
-                    .ConfigureAwait(false));
+            RightReplacement,
+            await RightEither.ReplaceEitherLazyAsync(LeftReplacer.InvokeAsync, RightReplacement)
+                .ConfigureAwait(false));
     }
 
     /// <summary>
@@ -196,14 +192,14 @@ public class ReplaceTest
     public async Task TestReplaceEitherLazyAsync_LazyLeftOnly_Cancellable_NoCancellation()
     {
         Assert.That.HasLeft(
-            2.0f,
-            await Either<int, string>.New(4).ReplaceEitherLazyAsync(Get2.InvokeCancellableAsync, StartOfMillennium3)
-                    .ConfigureAwait(false));
+            LeftReplacement,
+            await LeftEither.ReplaceEitherLazyAsync(LeftReplacer.InvokeCancellableAsync, RightReplacement)
+                .ConfigureAwait(false));
 
         Assert.That.HasRight(
-            StartOfMillennium3,
-            await Either<int, string>.New(" ").ReplaceEitherLazyAsync(Get2.InvokeCancellableAsync, StartOfMillennium3)
-                    .ConfigureAwait(false));
+            RightReplacement,
+            await RightEither.ReplaceEitherLazyAsync(LeftReplacer.InvokeCancellableAsync, RightReplacement)
+                .ConfigureAwait(false));
     }
 
     /// <summary>
@@ -216,15 +212,15 @@ public class ReplaceTest
     public async Task TestReplaceEitherLazyAsync_LazyLeftOnly_Cancellable_Cancellation()
     {
         await Assert.That.IsCanceledAsync(
-                (e, ct) => e.ReplaceEitherLazyAsync(Get2.InvokeCancellableAsync, StartOfMillennium3, ct),
-                Either<int, string>.New(4))
+                (e, ct) => e.ReplaceEitherLazyAsync(LeftReplacer.InvokeCancellableAsync, RightReplacement, ct),
+                LeftEither)
             .ConfigureAwait(false);
 
         Assert.That.HasRight(
-            StartOfMillennium3,
+            RightReplacement,
             await Assert.That.IsNotCanceledAsync(
-                    (e, ct) => e.ReplaceEitherLazyAsync(Get2.InvokeCancellableAsync, StartOfMillennium3, ct),
-                    Either<int, string>.New(""))
+                    (e, ct) => e.ReplaceEitherLazyAsync(LeftReplacer.InvokeCancellableAsync, RightReplacement, ct),
+                    RightEither)
                 .ConfigureAwait(false));
     }
     #endregion
@@ -240,13 +236,13 @@ public class ReplaceTest
     public async Task TestReplaceEitherLazyAsync_BothLazy_LeftAsyncOnly_NonCancellable()
     {
         Assert.That.HasLeft(
-            2.0f,
-            await LeftEither.ReplaceEitherLazyAsync(Get2.InvokeAsync, GetStartOfMillennium3.Invoke)
+            LeftReplacement,
+            await LeftEither.ReplaceEitherLazyAsync(LeftReplacer.InvokeAsync, RightReplacer.Invoke)
                 .ConfigureAwait(false));
 
         Assert.That.HasRight(
-            StartOfMillennium3,
-            await RightEither.ReplaceEitherLazyAsync(Get2.InvokeAsync, GetStartOfMillennium3.Invoke)
+            RightReplacement,
+            await RightEither.ReplaceEitherLazyAsync(LeftReplacer.InvokeAsync, RightReplacer.Invoke)
                 .ConfigureAwait(false));
     }
 
@@ -280,14 +276,14 @@ public class ReplaceTest
     public async Task TestReplaceEitherLazyAsync_BothLazy_LeftAsyncOnly_Cancellable_Cancellation()
     {
         await Assert.That.IsCanceledAsync(
-                (e, ct) => e.ReplaceEitherLazyAsync(Get2.InvokeCancellableAsync, GetStartOfMillennium3.Invoke, ct),
+                (e, ct) => e.ReplaceEitherLazyAsync(LeftReplacer.InvokeCancellableAsync, RightReplacer.Invoke, ct),
                 LeftEither)
             .ConfigureAwait(false);
 
         Assert.That.HasRight(
             RightReplacement,
             await Assert.That.IsNotCanceledAsync(
-                    (e, ct) => e.ReplaceEitherLazyAsync(Get2.InvokeCancellableAsync, GetStartOfMillennium3.Invoke, ct),
+                    (e, ct) => e.ReplaceEitherLazyAsync(LeftReplacer.InvokeCancellableAsync, RightReplacer.Invoke, ct),
                     RightEither)
                 .ConfigureAwait(false));
     }
@@ -306,14 +302,14 @@ public class ReplaceTest
     public async Task TestReplaceEitherLazyAsync_LazyRightOnly_NonCancellable()
     {
         Assert.That.HasLeft(
-            2.0f,
-            await Either<int, string>.New(4).ReplaceEitherLazyAsync(2.0, GetStartOfMillennium3.InvokeAsync)
-                    .ConfigureAwait(false));
+            LeftReplacement,
+            await LeftEither.ReplaceEitherLazyAsync(LeftReplacement, RightReplacer.InvokeAsync)
+                .ConfigureAwait(false));
 
         Assert.That.HasRight(
-            StartOfMillennium3,
-            await Either<int, string>.New("   ").ReplaceEitherLazyAsync(2.0, GetStartOfMillennium3.InvokeAsync)
-                    .ConfigureAwait(false));
+            RightReplacement,
+            await RightEither.ReplaceEitherLazyAsync(LeftReplacement, RightReplacer.InvokeAsync)
+                .ConfigureAwait(false));
     }
 
     /// <summary>
@@ -326,14 +322,14 @@ public class ReplaceTest
     public async Task TestReplaceEitherLazyAsync_LazyRightOnly_Cancellable_NoCancellation()
     {
         Assert.That.HasLeft(
-            2.0f,
-            await Either<int, string>.New(4).ReplaceEitherLazyAsync(2.0, GetStartOfMillennium3.InvokeCancellableAsync)
-                    .ConfigureAwait(false));
+            LeftReplacement,
+            await LeftEither.ReplaceEitherLazyAsync(LeftReplacement, RightReplacer.InvokeCancellableAsync)
+                .ConfigureAwait(false));
 
         Assert.That.HasRight(
-            StartOfMillennium3,
-            await Either<int, string>.New("").ReplaceEitherLazyAsync(2.0, GetStartOfMillennium3.InvokeCancellableAsync)
-                    .ConfigureAwait(false));
+            RightReplacement,
+            await RightEither.ReplaceEitherLazyAsync(LeftReplacement, RightReplacer.InvokeCancellableAsync)
+                .ConfigureAwait(false));
     }
 
     /// <summary>
@@ -346,15 +342,15 @@ public class ReplaceTest
     public async Task TestReplaceEitherLazyAsync_LazyRightOnly_Cancellable_Cancellation()
     {
         Assert.That.HasLeft(
-            2.0,
+            LeftReplacement,
             await Assert.That.IsNotCanceledAsync(
-                    (e, ct) => e.ReplaceEitherLazyAsync(2.0, GetStartOfMillennium3.InvokeCancellableAsync, ct),
-                    Either<int, string>.New(4))
+                    (e, ct) => e.ReplaceEitherLazyAsync(LeftReplacement, RightReplacer.InvokeCancellableAsync, ct),
+                    LeftEither)
                 .ConfigureAwait(false));
 
         await Assert.That.IsCanceledAsync(
-                (e, ct) => e.ReplaceEitherLazyAsync(2.0, GetStartOfMillennium3.InvokeCancellableAsync, ct),
-                Either<int, string>.New(""))
+                (e, ct) => e.ReplaceEitherLazyAsync(LeftReplacement, RightReplacer.InvokeCancellableAsync, ct),
+                RightEither)
             .ConfigureAwait(false);
     }
     #endregion
@@ -370,13 +366,13 @@ public class ReplaceTest
     public async Task TestReplaceEitherLazyAsync_BothLazy_RightAsyncOnly_NonCancellable()
     {
         Assert.That.HasLeft(
-            2.0f,
-            await LeftEither.ReplaceEitherLazyAsync(Get2.Invoke, GetStartOfMillennium3.InvokeAsync)
+            LeftReplacement,
+            await LeftEither.ReplaceEitherLazyAsync(LeftReplacer.Invoke, RightReplacer.InvokeAsync)
                 .ConfigureAwait(false));
 
         Assert.That.HasRight(
-            StartOfMillennium3,
-            await RightEither.ReplaceEitherLazyAsync(Get2.Invoke, GetStartOfMillennium3.InvokeAsync)
+            RightReplacement,
+            await RightEither.ReplaceEitherLazyAsync(LeftReplacer.Invoke, RightReplacer.InvokeAsync)
                 .ConfigureAwait(false));
     }
 
@@ -594,8 +590,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceRight()
     {
-        Assert.That.HasLeft(2, Either<int, string>.New(2).ReplaceRight(3.0));
-        Assert.That.HasRight(3.0, Either<int, string>.New("").ReplaceRight(3.0));
+        Assert.That.HasLeft(LeftValue, LeftEither.ReplaceRight(RightReplacement));
+        Assert.That.HasRight(RightReplacement, RightEither.ReplaceRight(RightReplacement));
     }
 
     /// <summary>
@@ -604,8 +600,8 @@ public class ReplaceTest
     [TestMethod]
     public void TestReplaceRightLazy()
     {
-        Assert.That.HasLeft(4, Either<int, string>.New(4).ReplaceRightLazy(GetStartOfMillennium3.Invoke));
-        Assert.That.HasRight(StartOfMillennium3, Either<int, string>.New("").ReplaceRightLazy(GetStartOfMillennium3.Invoke));
+        Assert.That.HasLeft(LeftValue, LeftEither.ReplaceRightLazy(RightReplacer.Invoke));
+        Assert.That.HasRight(RightReplacement, RightEither.ReplaceRightLazy(RightReplacer.Invoke));
     }
     #endregion
 
@@ -652,21 +648,6 @@ public class ReplaceTest
     #endregion
 
     #region Helper Factories
-    /// <summary>
-    /// A factory method that gets the number 2.
-    /// </summary>
-    private static readonly FunctionOptions<float> Get2 = new(() => 2);
-
-    /// <summary>
-    /// A factory method that gets the first instant of the third millennium.
-    /// </summary>
-    private static readonly FunctionOptions<DateTime> GetStartOfMillennium3 = new(() => StartOfMillennium3);
-
-    /// <summary>
-    /// The first instant of the third millennium.
-    /// </summary>
-    private static readonly DateTime StartOfMillennium3 = DateTime.Parse("January 1, 2000");
-
     /// <summary>
     /// A thunk that gets <see cref="LeftReplacement"/>.
     /// </summary>
