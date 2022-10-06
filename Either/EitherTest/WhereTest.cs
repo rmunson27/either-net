@@ -77,10 +77,11 @@ public class WhereTest
     [TestMethod]
     public void TestWhereEither()
     {
-        Assert.That.SequenceEqual(new[] { 2 }, Either<string, int>.New(2).WhereEither(LengthIsEven, IsEven));
-        Assert.IsFalse(Either<string, int>.New(3).WhereEither(LengthIsEven, IsEven).Cast<object>().Any());
         Assert.That.SequenceEqual(new[] { "" }, Either<string, int>.New("").WhereEither(LengthIsEven, IsEven));
-        Assert.IsFalse(Either<string, int>.New(" ").WhereEither(LengthIsEven, IsEven).Cast<object>().Any());
+        Assert.That.IsSingleton(2, Either<string, int>.New(2).WhereEither(LengthIsEven, IsEven));
+        Assert.That.IsEmpty(Either<string, int>.New(3).WhereEither(LengthIsEven, IsEven));
+        Assert.That.IsSingleton("", Either<string, int>.New("").WhereEither(LengthIsEven, IsEven));
+        Assert.That.IsEmpty(Either<string, int>.New(" ").WhereEither(LengthIsEven, IsEven));
     }
 
     /// <summary>
@@ -91,14 +92,12 @@ public class WhereTest
     [TestMethod]
     public void TestWhereEitherExtension()
     {
-        Assert.That.SequenceEqual(
-            new[] { PersonalEmail }, Either<Email, Phone>.New(PersonalEmail).WhereEither(IsPersonal.Delegate));
-        Assert.IsFalse(
-            Either<Email, Phone>.New(NonPersonalEmail).WhereEither(IsPersonal.Delegate).Any());
-        Assert.That.SequenceEqual(
-            new[] { PersonalPhone }, Either<Email, Phone>.New(PersonalPhone).WhereEither(IsPersonal.Delegate));
-        Assert.IsFalse(
-            Either<Email, Phone>.New(NonPersonalPhone).WhereEither(IsPersonal.Delegate).Any());
+        Assert.That.IsSingleton(
+            PersonalEmail, Either<Email, Phone>.New(PersonalEmail).WhereEither(IsPersonal.Delegate));
+        Assert.That.IsEmpty(Either<Email, Phone>.New(NonPersonalEmail).WhereEither(IsPersonal.Delegate));
+        Assert.That.IsSingleton(
+            PersonalPhone, Either<Email, Phone>.New(PersonalPhone).WhereEither(IsPersonal.Delegate));
+        Assert.That.IsEmpty(Either<Email, Phone>.New(NonPersonalPhone).WhereEither(IsPersonal.Delegate));
     }
     #endregion
 

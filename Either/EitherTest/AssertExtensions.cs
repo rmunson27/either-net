@@ -50,6 +50,48 @@ internal static class AssertExtensions
 
     #region IEnumerable
     /// <summary>
+    /// Asserts that the <see cref="IEnumerable"/> is a singleton containing the expected element.
+    /// </summary>
+    /// <param name="_"></param>
+    /// <param name="expectedElement"></param>
+    /// <param name="actual"></param>
+    /// <param name="message"></param>
+    public static void IsSingleton(this Assert _, object expectedElement, IEnumerable actual, string message = "")
+        => _.SequenceEqual(new[] { expectedElement }, actual, message);
+
+    /// <summary>
+    /// Asserts that the <see cref="IEnumerable{T}"/> is a singleton containing the expected element.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="_"></param>
+    /// <param name="expectedElement"></param>
+    /// <param name="actual"></param>
+    /// <param name="message"></param>
+    public static void IsSingleton<T>(this Assert _, T expectedElement, IEnumerable<T> actual, string message = "")
+        => _.SequenceEqual(new[] { expectedElement }, actual, message);
+
+    /// <summary>
+    /// Asserts that the given <see cref="IEnumerable"/> is empty.
+    /// </summary>
+    /// <param name="_"></param>
+    /// <param name="collection"></param>
+    /// <param name="message"></param>
+    public static void IsEmpty(this Assert _, IEnumerable collection, string message = "")
+        => _.IsEmpty(collection.Cast<object>(), message);
+
+    /// <summary>
+    /// Asserts that the given <see cref="IEnumerable{T}"/> is empty.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="_"></param>
+    /// <param name="collection"></param>
+    /// <param name="message"></param>
+    public static void IsEmpty<T>(this Assert _, IEnumerable<T> collection, string message = "")
+        => Assert.IsFalse(
+            collection.Any(),
+            "Collection was not empty" + (string.IsNullOrEmpty(message) ? "." : $": {message}"));
+
+    /// <summary>
     /// Asserts that the two <see cref="IEnumerable"/> instances are equal.
     /// </summary>
     /// <param name="_"></param>
