@@ -27,6 +27,11 @@ public class WhereTest
     private static readonly Phone PersonalPhone = new(3515550193, true),
                                   NonPersonalPhone = new(1075550166, false),
                                   CompanyPhone = new(1043550154, false);
+
+    /// <summary>
+    /// A default string value to use to test the methods.
+    /// </summary>
+    private const string DefaultString = "<Default Value>";
     #endregion
 
     #region Tests
@@ -59,12 +64,9 @@ public class WhereTest
     [TestMethod]
     public void TestWhereLeft_Either_Lazy()
     {
-        const string DefaultValue = "<DefaultValue>";
-        static string defaultValueFactory() => DefaultValue;
-
-        Assert.That.HasLeft(2, Either<int, string>.New(2).WhereLeft(IsEven, defaultValueFactory));
-        Assert.That.HasRight(DefaultValue, Either<int, string>.New(3).WhereLeft(IsEven, defaultValueFactory));
-        Assert.That.HasRight("s", Either<int, string>.New("s").WhereLeft(IsEven, defaultValueFactory));
+        Assert.That.HasLeft(2, Either<int, string>.New(2).WhereLeft(IsEven, GetDefaultString));
+        Assert.That.HasRight(DefaultString, Either<int, string>.New(3).WhereLeft(IsEven, GetDefaultString));
+        Assert.That.HasRight("s", Either<int, string>.New("s").WhereLeft(IsEven, GetDefaultString));
     }
     #endregion
 
@@ -129,17 +131,15 @@ public class WhereTest
     [TestMethod]
     public void TestWhereRight_Either_Lazy()
     {
-        const string DefaultValue = "<DefaultValue>";
-        static string defaultValueFactory() => DefaultValue;
-
-        Assert.That.HasRight(2, Either<string, int>.New(2).WhereRight(IsEven, defaultValueFactory));
-        Assert.That.HasLeft(DefaultValue, Either<string, int>.New(3).WhereRight(IsEven, defaultValueFactory));
-        Assert.That.HasLeft("s", Either<string, int>.New("s").WhereRight(IsEven, defaultValueFactory));
+        Assert.That.HasRight(2, Either<string, int>.New(2).WhereRight(IsEven, GetDefaultString));
+        Assert.That.HasLeft(DefaultString, Either<string, int>.New(3).WhereRight(IsEven, GetDefaultString));
+        Assert.That.HasLeft("s", Either<string, int>.New("s").WhereRight(IsEven, GetDefaultString));
     }
     #endregion
     #endregion
 
     #region Helpers
+    #region Functions
     #region Predicates
     /// <summary>
     /// Determines if the given integer is even.
@@ -169,6 +169,17 @@ public class WhereTest
     /// as a convenience.
     /// </remarks>
     private static readonly FunctionOptions<ContactInformation, bool> IsPersonal = new(ci => ci.IsPersonal);
+    #endregion
+
+    #region Factories
+    /// <summary>
+    /// A factory that gets <see cref="DefaultString"/>.
+    /// </summary>
+    /// <remarks>
+    /// This factory is used internally to test the methods.
+    /// </remarks>
+    private static readonly FunctionOptions<string> GetDefaultString = new(() => DefaultString);
+    #endregion
     #endregion
 
     #region Types
