@@ -212,7 +212,6 @@ public class WhereTest
     #endregion
 
     #region Helpers
-    #region Functions
     #region Predicates
     /// <summary>
     /// Determines if the given integer is even.
@@ -252,38 +251,6 @@ public class WhereTest
     /// This factory is used internally to test the methods.
     /// </remarks>
     private static readonly FunctionOptions<string> GetDefaultString = new(() => DefaultString);
-    #endregion
-    #endregion
-
-    #region Types
-    /// <summary>
-    /// Represents an email address at which a person can be reached.
-    /// </summary>
-    /// <param name="Address"></param>
-    /// <remarks>
-    /// This record is used internally to test the methods.
-    /// </remarks>
-    private sealed record class Email(string Address, bool IsPersonal) : ContactInformation(IsPersonal);
-
-    /// <summary>
-    /// Represents a phone number at which a person can be reached.
-    /// </summary>
-    /// <param name="Number"></param>
-    /// <remarks>
-    /// This record is used internally to test the methods.
-    /// </remarks>
-    private sealed record class Phone(long Number, bool IsPersonal) : ContactInformation(IsPersonal);
-
-    /// <summary>
-    /// Represents contact information for a person.
-    /// </summary>
-    /// <param name="IsPersonal">
-    /// Whether or not the contact information is personal.
-    /// </param>
-    /// <remarks>
-    /// This record is used internally to test the methods.
-    /// </remarks>
-    private abstract record class ContactInformation(bool IsPersonal) { }
     #endregion
     #endregion
 }
