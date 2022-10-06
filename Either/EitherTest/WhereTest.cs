@@ -35,6 +35,7 @@ public class WhereTest
     #endregion
 
     #region Tests
+    #region Synchronous
     #region Left
     /// <summary>
     /// Tests the <see cref="Either{TLeft, TRight}.WhereLeft(Func{TLeft, bool})"/> method.
@@ -77,7 +78,6 @@ public class WhereTest
     [TestMethod]
     public void TestWhereEither()
     {
-        Assert.That.SequenceEqual(new[] { "" }, Either<string, int>.New("").WhereEither(LengthIsEven, IsEven));
         Assert.That.IsSingleton(2, Either<string, int>.New(2).WhereEither(LengthIsEven, IsEven));
         Assert.That.IsEmpty(Either<string, int>.New(3).WhereEither(LengthIsEven, IsEven));
         Assert.That.IsSingleton("", Either<string, int>.New("").WhereEither(LengthIsEven, IsEven));
@@ -133,6 +133,80 @@ public class WhereTest
         Assert.That.HasRight(2, Either<string, int>.New(2).WhereRight(IsEven, GetDefaultString));
         Assert.That.HasLeft(DefaultString, Either<string, int>.New(3).WhereRight(IsEven, GetDefaultString));
         Assert.That.HasLeft("s", Either<string, int>.New("s").WhereRight(IsEven, GetDefaultString));
+    }
+    #endregion
+    #endregion
+
+    #region Asynchronous
+    /// <summary>
+    /// Tests the
+    /// <see cref="EitherExtensions.WhereEitherAsync{TLeft, TRight, TParent}(Either{TLeft, TRight}, Func{TParent, Task{bool}})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereEitherExtensionAsync_NonCancellable()
+    {
+        Assert.That.IsSingleton(
+            PersonalEmail,
+            await Either<Email, Phone>.New(PersonalEmail).WhereEitherAsync(IsPersonal.AsyncDelegate)
+                .ConfigureAwait(false));
+        Assert.That.IsEmpty(
+            await Either<Email, Phone>.New(NonPersonalEmail).WhereEitherAsync(IsPersonal.AsyncDelegate)
+                .ConfigureAwait(false));
+
+        Assert.That.IsSingleton(
+            PersonalPhone,
+            await Either<Email, Phone>.New(PersonalPhone).WhereEitherAsync(IsPersonal.AsyncDelegate)
+                .ConfigureAwait(false));
+        Assert.That.IsEmpty(
+            await Either<Email, Phone>.New(NonPersonalPhone).WhereEitherAsync(IsPersonal.AsyncDelegate)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="EitherExtensions.WhereEitherAsync{TLeft, TRight, TParent}(Either{TLeft, TRight}, Func{TParent, CancellationToken, Task{bool}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereEitherExtensionAsync_Cancellable_NoCancellation()
+    {
+        Assert.That.IsSingleton(
+            PersonalEmail,
+            await Either<Email, Phone>.New(PersonalEmail).WhereEitherAsync(IsPersonal.CancellableAsyncDelegate)
+                .ConfigureAwait(false));
+        Assert.That.IsEmpty(
+            await Either<Email, Phone>.New(NonPersonalEmail).WhereEitherAsync(IsPersonal.CancellableAsyncDelegate)
+                .ConfigureAwait(false));
+
+        Assert.That.IsSingleton(
+            PersonalPhone,
+            await Either<Email, Phone>.New(PersonalPhone).WhereEitherAsync(IsPersonal.CancellableAsyncDelegate)
+                .ConfigureAwait(false));
+        Assert.That.IsEmpty(
+            await Either<Email, Phone>.New(NonPersonalPhone).WhereEitherAsync(IsPersonal.CancellableAsyncDelegate)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="EitherExtensions.WhereEitherAsync{TLeft, TRight, TParent}(Either{TLeft, TRight}, Func{TParent, CancellationToken, Task{bool}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereEitherExtensionAsync_Cancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereEitherAsync(IsPersonal.CancellableAsyncDelegate, ct),
+                Either<Email, Phone>.New(PersonalEmail))
+            .ConfigureAwait(false);
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereEitherAsync(IsPersonal.CancellableAsyncDelegate, ct),
+                Either<Email, Phone>.New(PersonalPhone))
+            .ConfigureAwait(false);
     }
     #endregion
     #endregion
