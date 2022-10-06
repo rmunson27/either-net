@@ -33,9 +33,23 @@ public class MatchesTest
     /// An <see cref="Either{TLeft, TRight}"/> containing an odd-length string on the right.
     /// </summary>
     private static readonly Either<int, string> OddLengthRightEither = Either<int, string>.New(".");
+
+    /// <summary>
+    /// An <see cref="Either{TLeft, TRight}"/> containing contact information to use to test
+    /// <see cref="Either{TLeft, TRight}"/> extension methods.
+    /// </summary>
+    private static readonly Either<Email, Phone> PersonalEmailLeftEither
+                                                    = Either<Email, Phone>.New(new Email("r@s.t", true)),
+                                                 NonPersonalEmailLeftEither
+                                                    = Either<Email, Phone>.New(new Email("u@v.w", false)),
+                                                 PersonalPhoneRightEither
+                                                    = Either<Email, Phone>.New(new Phone(1234567890, true)),
+                                                 NonPersonalPhoneRightEither
+                                                    = Either<Email, Phone>.New(new Phone(2345678901, false));
     #endregion
 
     #region Tests
+    #region Instance
     #region Synchronous
     /// <summary>
     /// Tests the <see cref="Either{TLeft, TRight}.LeftMatches(Func{TLeft, bool})"/> method.
@@ -531,6 +545,92 @@ public class MatchesTest
     #endregion
     #endregion
 
+    #region Extension
+    /// <summary>
+    /// Tests the
+    /// <see cref="EitherExtensions.MatchesEither{TLeft, TRight, TParent}(Either{TLeft, TRight}, Func{TParent, bool})"/>
+    /// method.
+    /// </summary>
+    [TestMethod]
+    public void TestMatchesEitherExtension()
+    {
+        Assert.IsTrue(PersonalEmailLeftEither.MatchesEither(IsPersonal.Delegate));
+        Assert.IsFalse(NonPersonalEmailLeftEither.MatchesEither(IsPersonal.Delegate));
+        Assert.IsTrue(PersonalPhoneRightEither.MatchesEither(IsPersonal.Delegate));
+        Assert.IsFalse(NonPersonalPhoneRightEither.MatchesEither(IsPersonal.Delegate));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="EitherExtensions.MatchesEitherAsync{TLeft, TRight, TParent}(Either{TLeft, TRight}, Func{TParent, Task{bool}})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestMatchesEitherExtensionAsync_NonCancellable()
+    {
+        Assert.IsTrue(
+            await PersonalEmailLeftEither.MatchesEitherAsync(IsPersonal.AsyncDelegate).ConfigureAwait(false));
+        Assert.IsFalse(
+            await NonPersonalEmailLeftEither.MatchesEitherAsync(IsPersonal.AsyncDelegate).ConfigureAwait(false));
+        Assert.IsTrue(
+            await PersonalPhoneRightEither.MatchesEitherAsync(IsPersonal.AsyncDelegate).ConfigureAwait(false));
+        Assert.IsFalse(
+            await NonPersonalPhoneRightEither.MatchesEitherAsync(IsPersonal.AsyncDelegate).ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="EitherExtensions.MatchesEitherAsync{TLeft, TRight, TParent}(Either{TLeft, TRight}, Func{TParent, CancellationToken, Task{bool}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestMatchesEitherExtensionAsync_Cancellable_NoCancellation()
+    {
+        Assert.IsTrue(
+            await PersonalEmailLeftEither.MatchesEitherAsync(IsPersonal.CancellableAsyncDelegate)
+                .ConfigureAwait(false));
+        Assert.IsFalse(
+            await NonPersonalEmailLeftEither.MatchesEitherAsync(IsPersonal.CancellableAsyncDelegate)
+                .ConfigureAwait(false));
+        Assert.IsTrue(
+            await PersonalPhoneRightEither.MatchesEitherAsync(IsPersonal.CancellableAsyncDelegate)
+                .ConfigureAwait(false));
+        Assert.IsFalse(
+            await NonPersonalPhoneRightEither.MatchesEitherAsync(IsPersonal.CancellableAsyncDelegate)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="EitherExtensions.MatchesEitherAsync{TLeft, TRight, TParent}(Either{TLeft, TRight}, Func{TParent, CancellationToken, Task{bool}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestMatchesEitherExtensionAsync_Cancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.MatchesEitherAsync(IsPersonal.CancellableAsyncDelegate, ct),
+                PersonalEmailLeftEither)
+            .ConfigureAwait(false);
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.MatchesEitherAsync(IsPersonal.CancellableAsyncDelegate, ct),
+                NonPersonalEmailLeftEither)
+            .ConfigureAwait(false);
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.MatchesEitherAsync(IsPersonal.CancellableAsyncDelegate, ct),
+                PersonalPhoneRightEither)
+            .ConfigureAwait(false);
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.MatchesEitherAsync(IsPersonal.CancellableAsyncDelegate, ct),
+                NonPersonalPhoneRightEither)
+            .ConfigureAwait(false);
+    }
+    #endregion
+    #endregion
+
     #region Helper Predicates
     /// <summary>
     /// Determines whether or not the argument is even.
@@ -546,8 +646,15 @@ public class MatchesTest
     /// <remarks>
     /// This predicate is used internally to test the relevant <see cref="Either{TLeft, TRight}"/> methods.
     /// </remarks>
-    /// <param name="s"></param>
     /// <returns></returns>
     private static readonly FunctionOptions<string, bool> IsLengthEven = new(s => s.Length % 2 == 0);
+
+    /// <summary>
+    /// Determines whether or not the argument represents personal information.
+    /// </summary>
+    /// <remarks>
+    /// This predicate is used internally to test the relevant <see cref="Either{TLeft, TRight}"/> methods.
+    /// </remarks>
+    private static readonly FunctionOptions<ContactInformation, bool> IsPersonal = new(ci => ci.IsPersonal);
     #endregion
 }

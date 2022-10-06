@@ -14,6 +14,58 @@ namespace Rem.Core.Utilities.Monads;
 /// </summary>
 public static class EitherExtensions
 {
+    #region Matches
+    /// <summary>
+    /// Determines if the value wrapped in the current instance matches the predicate passed in.
+    /// </summary>
+    /// <typeparam name="TLeft"></typeparam>
+    /// <typeparam name="TRight"></typeparam>
+    /// <typeparam name="TParent"></typeparam>
+    /// <param name="either"></param>
+    /// <param name="parentPredicate"></param>
+    /// <returns></returns>
+    public static bool MatchesEither<TLeft, TRight, TParent>(
+        [NonDefaultableStruct] this Either<TLeft, TRight> either, Func<TParent, bool> parentPredicate)
+        where TLeft : TParent
+        where TRight : TParent
+        => either.IsRight ? parentPredicate(either._right) : parentPredicate(either._left);
+
+    /// <summary>
+    /// Asynchronously determines if the value wrapped in the current instance matches the predicate passed in.
+    /// </summary>
+    /// <typeparam name="TLeft"></typeparam>
+    /// <typeparam name="TRight"></typeparam>
+    /// <typeparam name="TParent"></typeparam>
+    /// <param name="either"></param>
+    /// <param name="parentPredicateAsync"></param>
+    /// <returns></returns>
+    public static Task<bool> MatchesEitherAsync<TLeft, TRight, TParent>(
+        [NonDefaultableStruct] this Either<TLeft, TRight> either, Func<TParent, Task<bool>> parentPredicateAsync)
+        where TLeft : TParent
+        where TRight : TParent
+        => either.IsRight ? parentPredicateAsync(either._right) : parentPredicateAsync(either._left);
+
+    /// <summary>
+    /// Asynchronously determines if the value wrapped in the current instance matches the predicate passed in.
+    /// </summary>
+    /// <typeparam name="TLeft"></typeparam>
+    /// <typeparam name="TRight"></typeparam>
+    /// <typeparam name="TParent"></typeparam>
+    /// <param name="either"></param>
+    /// <param name="parentPredicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static Task<bool> MatchesEitherAsync<TLeft, TRight, TParent>(
+        [NonDefaultableStruct] this Either<TLeft, TRight> either,
+        Func<TParent, CancellationToken, Task<bool>> parentPredicateAsync,
+        CancellationToken cancellationToken = default)
+        where TLeft : TParent
+        where TRight : TParent
+        => either.IsRight
+            ? parentPredicateAsync(either._right, cancellationToken)
+            : parentPredicateAsync(either._left, cancellationToken);
+    #endregion
+
     #region Where
     /// <summary>
     /// Filters the value wrapped in the current <see cref="Either{TLeft, TRight}"/> by the specified predicate.
