@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rem.Core.Attributes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -24,7 +25,7 @@ public static class EitherExtensions
     /// <param name="parentPredicate"></param>
     /// <returns></returns>
     public static IEnumerable<TParent> WhereEither<TLeft, TRight, TParent>(
-        this Either<TLeft, TRight> either, Func<TParent, bool> parentPredicate)
+        [NonDefaultableStruct] this Either<TLeft, TRight> either, Func<TParent, bool> parentPredicate)
         where TLeft : TParent
         where TRight : TParent
     {
@@ -49,7 +50,7 @@ public static class EitherExtensions
     /// <param name="parentPredicateAsync"></param>
     /// <returns></returns>
     public static async Task<IEnumerable<TParent>> WhereEitherAsync<TLeft, TRight, TParent>(
-        this Either<TLeft, TRight> either,
+        [NonDefaultableStruct] this Either<TLeft, TRight> either,
         Func<TParent, Task<bool>> parentPredicateAsync)
         where TLeft : TParent
         where TRight : TParent
@@ -78,7 +79,7 @@ public static class EitherExtensions
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static async Task<IEnumerable<TParent>> WhereEitherAsync<TLeft, TRight, TParent>(
-        this Either<TLeft, TRight> either,
+        [NonDefaultableStruct] this Either<TLeft, TRight> either,
         Func<TParent, CancellationToken, Task<bool>> parentPredicateAsync,
         CancellationToken cancellationToken = default)
         where TLeft : TParent
