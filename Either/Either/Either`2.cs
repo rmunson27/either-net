@@ -3,6 +3,7 @@ using Rem.Core.ComponentModel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -925,6 +926,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
 
     #region Where
     #region IEnumerable (No Default Value)
+    #region Left
     /// <summary>
     /// Filters the left side of this instance by a predicate.
     /// </summary>
@@ -936,6 +938,31 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
         if (IsLeft && predicate(_left)) yield return _left;
     }
 
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<IEnumerable<TLeft>> WhereLeftAsync(Func<TLeft, Task<bool>> predicateAsync)
+        => IsLeft && await predicateAsync(_left) ? ImmutableList.Create(_left) : ImmutableList<TLeft>.Empty;
+
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<IEnumerable<TLeft>> WhereLeftAsync(
+        Func<TLeft, CancellationToken, Task<bool>> predicateAsync, CancellationToken cancellationToken = default)
+        => IsLeft && await predicateAsync(_left, cancellationToken)
+            ? ImmutableList.Create(_left)
+            : ImmutableList<TLeft>.Empty;
+    #endregion
+
+    #region Either Side
+    #region Synchronous
     /// <summary>
     /// Filters this instance by a predicate.
     /// </summary>
@@ -956,7 +983,203 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
 
         yield break;
     }
+    #endregion
 
+    #region Left Async Only
+    /// <summary>
+    /// Asynchronously filters this instance by a predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicate"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<IEnumerable> WhereEitherAsync(
+        Func<TLeft, Task<bool>> leftPredicateAsync, Func<TRight, bool> rightPredicate)
+    {
+        if (IsRight)
+        {
+            if (rightPredicate(_right)) return ImmutableList.Create(_right);
+        }
+        else
+        {
+            if (await leftPredicateAsync(_left)) return ImmutableList.Create(_left);
+        }
+
+        return ImmutableList<object>.Empty;
+    }
+
+    /// <summary>
+    /// Asynchronously filters this instance by a predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicate"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<IEnumerable> WhereEitherAsync(
+        Func<TLeft, CancellationToken, Task<bool>> leftPredicateAsync, Func<TRight, bool> rightPredicate,
+        CancellationToken cancellationToken = default)
+    {
+        if (IsRight)
+        {
+            if (rightPredicate(_right)) return ImmutableList.Create(_right);
+        }
+        else
+        {
+            if (await leftPredicateAsync(_left, cancellationToken)) return ImmutableList.Create(_left);
+        }
+
+        return ImmutableList<object>.Empty;
+    }
+    #endregion
+
+    #region Right Async Only
+    /// <summary>
+    /// Asynchronously filters this instance by a predicate.
+    /// </summary>
+    /// <param name="leftPredicate"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<IEnumerable> WhereEitherAsync(
+        Func<TLeft, bool> leftPredicate, Func<TRight, Task<bool>> rightPredicateAsync)
+    {
+        if (IsRight)
+        {
+            if (await rightPredicateAsync(_right)) return ImmutableList.Create(_right);
+        }
+        else
+        {
+            if (leftPredicate(_left)) return ImmutableList.Create(_left);
+        }
+
+        return ImmutableList<object>.Empty;
+    }
+
+    /// <summary>
+    /// Asynchronously filters this instance by a predicate.
+    /// </summary>
+    /// <param name="leftPredicate"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<IEnumerable> WhereEitherAsync(
+        Func<TLeft, bool> leftPredicate, Func<TRight, CancellationToken, Task<bool>> rightPredicateAsync,
+        CancellationToken cancellationToken = default)
+    {
+        if (IsRight)
+        {
+            if (await rightPredicateAsync(_right, cancellationToken)) return ImmutableList.Create(_right);
+        }
+        else
+        {
+            if (leftPredicate(_left)) return ImmutableList.Create(_left);
+        }
+
+        return ImmutableList<object>.Empty;
+    }
+    #endregion
+
+    #region Both Async
+    /// <summary>
+    /// Asynchronously filters this instance by a predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<IEnumerable> WhereEitherAsync(
+        Func<TLeft, Task<bool>> leftPredicateAsync, Func<TRight, Task<bool>> rightPredicateAsync)
+    {
+        if (IsRight)
+        {
+            if (await rightPredicateAsync(_right)) return ImmutableList.Create(_right);
+        }
+        else
+        {
+            if (await leftPredicateAsync(_left)) return ImmutableList.Create(_left);
+        }
+
+        return ImmutableList<object>.Empty;
+    }
+
+    /// <summary>
+    /// Asynchronously filters this instance by a predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<IEnumerable> WhereEitherAsync(
+        Func<TLeft, CancellationToken, Task<bool>> leftPredicateAsync, Func<TRight, Task<bool>> rightPredicateAsync,
+        CancellationToken cancellationToken = default)
+    {
+        if (IsRight)
+        {
+            if (await rightPredicateAsync(_right)) return ImmutableList.Create(_right);
+        }
+        else
+        {
+            if (await leftPredicateAsync(_left, cancellationToken)) return ImmutableList.Create(_left);
+        }
+
+        return ImmutableList<object>.Empty;
+    }
+
+    /// <summary>
+    /// Asynchronously filters this instance by a predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<IEnumerable> WhereEitherAsync(
+        Func<TLeft, Task<bool>> leftPredicateAsync, Func<TRight, CancellationToken, Task<bool>> rightPredicateAsync,
+        CancellationToken cancellationToken = default)
+    {
+        if (IsRight)
+        {
+            if (await rightPredicateAsync(_right, cancellationToken)) return ImmutableList.Create(_right);
+        }
+        else
+        {
+            if (await leftPredicateAsync(_left)) return ImmutableList.Create(_left);
+        }
+
+        return ImmutableList<object>.Empty;
+    }
+
+    /// <summary>
+    /// Asynchronously filters this instance by a predicate.
+    /// </summary>
+    /// <param name="leftPredicateAsync"></param>
+    /// <param name="rightPredicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [InstanceNotDefault]
+    public async Task<IEnumerable> WhereEitherAsync(
+        Func<TLeft, CancellationToken, Task<bool>> leftPredicateAsync,
+        Func<TRight, CancellationToken, Task<bool>> rightPredicateAsync,
+        CancellationToken cancellationToken = default)
+    {
+        if (IsRight)
+        {
+            if (await rightPredicateAsync(_right, cancellationToken)) return ImmutableList.Create(_right);
+        }
+        else
+        {
+            if (await leftPredicateAsync(_left, cancellationToken)) return ImmutableList.Create(_left);
+        }
+
+        return ImmutableList<object>.Empty;
+    }
+    #endregion
+    #endregion
+
+    #region Right
     /// <summary>
     /// Filters the right side of this instance by a predicate.
     /// </summary>
@@ -966,6 +1189,27 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     {
         if (IsRight && predicate(_right)) yield return _right;
     }
+
+    /// <summary>
+    /// Asynchronously filters the right side of this instance by a predicate.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<TRight>> WhereRightAsync(Func<TRight, Task<bool>> predicateAsync)
+        => IsRight && await predicateAsync(_right) ? ImmutableList.Create(_right) : ImmutableList<TRight>.Empty;
+
+    /// <summary>
+    /// Asynchronously filters the right side of this instance by a predicate.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<TRight>> WhereRightAsync(
+        Func<TRight, CancellationToken, Task<bool>> predicateAsync, CancellationToken cancellationToken = default)
+        => IsRight && await predicateAsync(_right, cancellationToken)
+            ? ImmutableList.Create(_right)
+            : ImmutableList<TRight>.Empty;
+    #endregion
     #endregion
 
     #region Either (Default Value)
