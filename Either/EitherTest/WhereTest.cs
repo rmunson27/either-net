@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rem.Core.Utilities.Monads;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -60,14 +61,14 @@ public class WhereTest
     }
 
     /// <summary>
-    /// Tests the <see cref="Either{TLeft, TRight}.WhereLeft(Func{TLeft, bool}, Func{TRight})"/> method.
+    /// Tests the <see cref="Either{TLeft, TRight}.WhereLeftLazy(Func{TLeft, bool}, Func{TRight})"/> method.
     /// </summary>
     [TestMethod]
     public void TestWhereLeft_Either_Lazy()
     {
-        Assert.That.HasLeft(2, Either<int, string>.New(2).WhereLeft(IsEven, GetDefaultString));
-        Assert.That.HasRight(DefaultString, Either<int, string>.New(3).WhereLeft(IsEven, GetDefaultString));
-        Assert.That.HasRight("s", Either<int, string>.New("s").WhereLeft(IsEven, GetDefaultString));
+        Assert.That.HasLeft(2, Either<int, string>.New(2).WhereLeftLazy(IsEven, GetDefaultString));
+        Assert.That.HasRight(DefaultString, Either<int, string>.New(3).WhereLeftLazy(IsEven, GetDefaultString));
+        Assert.That.HasRight("s", Either<int, string>.New("s").WhereLeftLazy(IsEven, GetDefaultString));
     }
     #endregion
 
@@ -125,20 +126,21 @@ public class WhereTest
     }
 
     /// <summary>
-    /// Tests the <see cref="Either{TLeft, TRight}.WhereRight(Func{TRight, bool}, Func{TLeft})"/> method.
+    /// Tests the <see cref="Either{TLeft, TRight}.WhereRightLazy(Func{TRight, bool}, Func{TLeft})"/> method.
     /// </summary>
     [TestMethod]
     public void TestWhereRight_Either_Lazy()
     {
-        Assert.That.HasRight(2, Either<string, int>.New(2).WhereRight(IsEven, GetDefaultString));
-        Assert.That.HasLeft(DefaultString, Either<string, int>.New(3).WhereRight(IsEven, GetDefaultString));
-        Assert.That.HasLeft("s", Either<string, int>.New("s").WhereRight(IsEven, GetDefaultString));
+        Assert.That.HasRight(2, Either<string, int>.New(2).WhereRightLazy(IsEven, GetDefaultString));
+        Assert.That.HasLeft(DefaultString, Either<string, int>.New(3).WhereRightLazy(IsEven, GetDefaultString));
+        Assert.That.HasLeft("s", Either<string, int>.New("s").WhereRightLazy(IsEven, GetDefaultString));
     }
     #endregion
     #endregion
 
     #region Asynchronous
     #region Left
+    #region Eager
     /// <summary>
     /// Tests the <see cref="Either{TLeft, TRight}.WhereLeftAsync(Func{TLeft, Task{bool}})"/> method.
     /// </summary>
@@ -195,6 +197,372 @@ public class WhereTest
                     Either<int, string>.New(""))
                 .ConfigureAwait(false));
     }
+    #endregion
+
+    #region Lazy
+    #region Only Predicate Async
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, Task{bool}}, Func{TRight})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_OnlyPredicateAsync_NonCancellable()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Either<int, string>.New(2).WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            DefaultString,
+            await Either<int, string>.New(3).WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            "s",
+            await Either<int, string>.New("s").WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, CancellationToken, Task{bool}}, Func{TRight}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_OnlyPredicateAsync_Cancellable_NoCancellation()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Either<int, string>.New(2)
+                    .WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            DefaultString,
+            await Either<int, string>.New(3)
+                    .WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            "s",
+            await Either<int, string>.New("s")
+                    .WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, CancellationToken, Task{bool}}, Func{TRight}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_OnlyPredicateAsync_Cancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke, ct),
+                Either<int, string>.New(2))
+            .ConfigureAwait(false);
+
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke, ct),
+                Either<int, string>.New(3))
+            .ConfigureAwait(false);
+
+        Assert.That.HasRight(
+            "s",
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke, ct),
+                    Either<int, string>.New("s"))
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Only Factory Async
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, bool}, Func{Task{TRight}})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_OnlyFactoryAsync_NonCancellable()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Either<int, string>.New(2).WhereLeftLazyAsync(IsEven.Invoke, GetDefaultString.InvokeAsync));
+
+        Assert.That.HasRight(
+            DefaultString,
+            await Either<int, string>.New(3).WhereLeftLazyAsync(IsEven.Invoke, GetDefaultString.InvokeAsync));
+
+        Assert.That.HasRight(
+            "s",
+            await Either<int, string>.New("s").WhereLeftLazyAsync(IsEven.Invoke, GetDefaultString.InvokeAsync));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, bool}, Func{CancellationToken, Task{TRight}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_OnlyFactoryAsync_Cancellable_NoCancellation()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Either<int, string>.New(2)
+                    .WhereLeftLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            DefaultString,
+            await Either<int, string>.New(3)
+                    .WhereLeftLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            "s",
+            await Either<int, string>.New("s")
+                    .WhereLeftLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, bool}, Func{CancellationToken, Task{TRight}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_OnlyFactoryAsync_Cancellable_Cancellation()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.WhereLeftLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync, ct),
+                    Either<int, string>.New(2))
+                .ConfigureAwait(false));
+
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereLeftLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync, ct),
+                Either<int, string>.New(3))
+            .ConfigureAwait(false);
+
+        Assert.That.HasRight(
+            "s",
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.WhereLeftLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync, ct),
+                    Either<int, string>.New("s"))
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Both Async
+    #region Non-Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, Task{bool}}, Func{Task{TRight}})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_BothAsync_NonCancellable()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Either<int, string>.New(2).WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeAsync));
+
+        Assert.That.HasRight(
+            DefaultString,
+            await Either<int, string>.New(3).WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeAsync));
+
+        Assert.That.HasRight(
+            "s",
+            await Either<int, string>.New("s").WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeAsync));
+    }
+    #endregion
+
+    #region Only Predicate Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, CancellationToken, Task{bool}}, Func{Task{TRight}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_BothAsync_OnlyPredicateCancellable_NoCancellation()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Either<int, string>.New(2)
+                    .WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            DefaultString,
+            await Either<int, string>.New(3)
+                    .WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            "s",
+            await Either<int, string>.New("s")
+                    .WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, CancellationToken, Task{bool}}, Func{Task{TRight}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_BothAsync_OnlyPredicateCancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync, ct),
+                Either<int, string>.New(2))
+            .ConfigureAwait(false);
+
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync, ct),
+                Either<int, string>.New(3))
+            .ConfigureAwait(false);
+
+        Assert.That.HasRight(
+            "s",
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync, ct),
+                    Either<int, string>.New("s"))
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Only Factory Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, Task{bool}}, Func{CancellationToken, Task{TRight}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_BothAsync_OnlyFactoryCancellable_NoCancellation()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Either<int, string>.New(2)
+                    .WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            DefaultString,
+            await Either<int, string>.New(3)
+                    .WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            "s",
+            await Either<int, string>.New("s")
+                    .WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, Task{bool}}, Func{CancellationToken, Task{TRight}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_BothAsync_OnlyFactoryCancellable_Cancellation()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync, ct),
+                    Either<int, string>.New(2))
+                .ConfigureAwait(false));
+
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync, ct),
+                Either<int, string>.New(3))
+            .ConfigureAwait(false);
+
+        Assert.That.HasRight(
+            "s",
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.WhereLeftLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync, ct),
+                    Either<int, string>.New("s"))
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Both Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, Task{bool}}, Func{CancellationToken, Task{TRight}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_BothAsyncCancellable_NoCancellation()
+    {
+        Assert.That.HasLeft(
+            2,
+            await Either<int, string>.New(2)
+                    .WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            DefaultString,
+            await Either<int, string>.New(3)
+                    .WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasRight(
+            "s",
+            await Either<int, string>.New("s")
+                    .WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereLeftLazyAsync(Func{TLeft, Task{bool}}, Func{CancellationToken, Task{TRight}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereLeftLazyAsync_BothAsyncCancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync, ct),
+                Either<int, string>.New(2))
+            .ConfigureAwait(false);
+
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereLeftLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync, ct),
+                Either<int, string>.New(3))
+            .ConfigureAwait(false);
+
+        Assert.That.HasRight(
+            "s",
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.WhereLeftLazyAsync(
+                        IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync, ct),
+                    Either<int, string>.New("s"))
+                .ConfigureAwait(false));
+    }
+    #endregion
+    #endregion
+    #endregion
     #endregion
 
     #region Either Side
@@ -654,6 +1022,7 @@ public class WhereTest
     #endregion
 
     #region Right
+    #region Eager
     /// <summary>
     /// Tests the <see cref="Either{TLeft, TRight}.WhereRightAsync(Func{TRight, Task{bool}})"/> method.
     /// </summary>
@@ -709,6 +1078,377 @@ public class WhereTest
                 Either<int, string>.New("."))
             .ConfigureAwait(false);
     }
+    #endregion
+
+    #region Lazy
+    #region Only Predicate Async
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, Task{bool}}, Func{TLeft})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_OnlyPredicateAsync_NonCancellable()
+    {
+        Assert.That.HasRight(
+            2,
+            await Either<string, int>.New(2).WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            DefaultString,
+            await Either<string, int>.New(3).WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            "s",
+            await Either<string, int>.New("s").WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, CancellationToken, Task{bool}}, Func{TLeft}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_OnlyPredicateAsync_Cancellable_NoCancellation()
+    {
+        Assert.That.HasRight(
+            2,
+            await Either<string, int>.New(2)
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            DefaultString,
+            await Either<string, int>.New(3)
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            "s",
+            await Either<string, int>.New("s")
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, CancellationToken, Task{bool}}, Func{TLeft}, CancellationToken)"/>
+    /// method, cancelling it to ensure cancellation tokens are used properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_OnlyPredicateAsync_Cancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke, ct),
+                Either<string, int>.New(2))
+            .ConfigureAwait(false);
+
+        Assert.That.HasLeft(
+            DefaultString,
+            await Either<string, int>.New(3)
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            "s",
+            await Either<string, int>.New("s")
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.Invoke)
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Only Factory Async
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, bool}, Func{Task{TLeft}})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_OnlyFactoryAsync_NonCancellable()
+    {
+        Assert.That.HasRight(
+            2,
+            await Either<string, int>.New(2).WhereRightLazyAsync(IsEven.Invoke, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            DefaultString,
+            await Either<string, int>.New(3).WhereRightLazyAsync(IsEven.Invoke, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            "s",
+            await Either<string, int>.New("s").WhereRightLazyAsync(IsEven.Invoke, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, bool}, Func{CancellationToken, Task{TLeft}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_OnlyFactoryAsync_Cancellable_NoCancellation()
+    {
+        Assert.That.HasRight(
+            2,
+            await Either<string, int>.New(2)
+                    .WhereRightLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            DefaultString,
+            await Either<string, int>.New(3)
+                    .WhereRightLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            "s",
+            await Either<string, int>.New("s")
+                    .WhereRightLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, bool}, Func{CancellationToken, Task{TLeft}}, CancellationToken)"/>
+    /// method, cancelling it to ensure cancellation tokens are used properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_OnlyFactoryAsync_Cancellable_Cancellation()
+    {
+        Assert.That.HasRight(
+            2,
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.WhereRightLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync, ct),
+                    Either<string, int>.New(2))
+                .ConfigureAwait(false));
+
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereRightLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync, ct),
+                Either<string, int>.New(3))
+            .ConfigureAwait(false);
+
+        Assert.That.HasLeft(
+            "s",
+            await Either<string, int>.New("s")
+                    .WhereRightLazyAsync(IsEven.Invoke, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Both Async
+    #region Non-Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, Task{bool}}, Func{Task{TLeft}})"/>
+    /// method.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_BothAsync_NonCancellable()
+    {
+        Assert.That.HasRight(
+            2,
+            await Either<string, int>.New(2).WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            DefaultString,
+            await Either<string, int>.New(3).WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            "s",
+            await Either<string, int>.New("s").WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Only Predicate Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, CancellationToken, Task{bool}}, Func{Task{TLeft}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_BothAsync_OnlyPredicateCancellable_NoCancellation()
+    {
+        Assert.That.HasRight(
+            2,
+            await Either<string, int>.New(2)
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            DefaultString,
+            await Either<string, int>.New(3)
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            "s",
+            await Either<string, int>.New("s")
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, CancellationToken, Task{bool}}, Func{Task{TLeft}}, CancellationToken)"/>
+    /// method, cancelling it to ensure that cancellation tokens are handled properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_BothAsync_OnlyPredicateCancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync, ct),
+                Either<string, int>.New(2))
+            .ConfigureAwait(false);
+
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync, ct),
+                Either<string, int>.New(3))
+            .ConfigureAwait(false);
+
+        Assert.That.HasLeft(
+            "s",
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeAsync, ct),
+                    Either<string, int>.New("s"))
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Only Factory Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, Task{bool}}, Func{CancellationToken, Task{TLeft}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_BothAsync_OnlyFactoryCancellable_NoCancellation()
+    {
+        Assert.That.HasRight(
+            2,
+            await Either<string, int>.New(2)
+                    .WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            DefaultString,
+            await Either<string, int>.New(3)
+                    .WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            "s",
+            await Either<string, int>.New("s")
+                    .WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, Task{bool}}, Func{CancellationToken, Task{TLeft}}, CancellationToken)"/>
+    /// method, cancelling it to ensure cancellation tokens are used properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_BothAsync_OnlyFactoryCancellable_Cancellation()
+    {
+        Assert.That.HasRight(
+            2,
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync, ct),
+                    Either<string, int>.New(2))
+                .ConfigureAwait(false));
+
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync, ct),
+                Either<string, int>.New(3))
+            .ConfigureAwait(false);
+
+        Assert.That.HasLeft(
+            "s",
+            await Assert.That.IsNotCanceledAsync(
+                    (e, ct) => e.WhereRightLazyAsync(IsEven.InvokeAsync, GetDefaultString.InvokeCancellableAsync, ct),
+                    Either<string, int>.New("s"))
+                .ConfigureAwait(false));
+    }
+    #endregion
+
+    #region Both Cancellable
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, CancellationToken, Task{bool}}, Func{CancellationToken, Task{TLeft}}, CancellationToken)"/>
+    /// method without cancelling it.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_BothAsyncCancellable_NoCancellation()
+    {
+        Assert.That.HasRight(
+            2,
+            await Either<string, int>.New(2)
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            DefaultString,
+            await Either<string, int>.New(3)
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+
+        Assert.That.HasLeft(
+            "s",
+            await Either<string, int>.New("s")
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Tests the
+    /// <see cref="Either{TLeft, TRight}.WhereRightLazyAsync(Func{TRight, CancellationToken, Task{bool}}, Func{CancellationToken, Task{TLeft}}, CancellationToken)"/>
+    /// method, cancelling it to ensure cancellation tokens are used properly.
+    /// </summary>
+    /// <returns></returns>
+    [TestMethod]
+    public async Task TestWhereRightLazyAsync_BothAsyncCancellable_Cancellation()
+    {
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereRightLazyAsync(
+                                IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync, ct),
+                Either<string, int>.New(2))
+            .ConfigureAwait(false);
+
+        await Assert.That.IsCanceledAsync(
+                (e, ct) => e.WhereRightLazyAsync(
+                                IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync, ct),
+                Either<string, int>.New(3))
+            .ConfigureAwait(false);
+
+        Assert.That.HasLeft(
+            "s",
+            await Either<string, int>.New("s")
+                    .WhereRightLazyAsync(IsEven.InvokeCancellableAsync, GetDefaultString.InvokeCancellableAsync)
+                .ConfigureAwait(false));
+    }
+    #endregion
+    #endregion
+    #endregion
     #endregion
     #endregion
     #endregion

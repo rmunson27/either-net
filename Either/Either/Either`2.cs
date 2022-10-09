@@ -1214,6 +1214,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
 
     #region Either (Default Value)
     #region Eager
+    #region Synchronous
     /// <summary>
     /// Filters the left side of this instance by a predicate, returning a new <see cref="Either{TLeft, TRight}"/>
     /// with the specified default value on the right if the predicate fails.
@@ -1236,27 +1237,313 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
         => IsRight ? (predicate(_right) ? this : new(defaultValue)) : this;
     #endregion
 
-    #region Lazy
+    #region Asynchronous
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the specified default value on the right if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereLeftAsync(
+        Func<TLeft, Task<bool>> predicateAsync, TRight defaultValue)
+        => IsRight ? this : (await predicateAsync(_left) ? this : new(defaultValue));
+
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the specified default value on the right if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultValue"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereLeftAsync(
+        Func<TLeft, CancellationToken, Task<bool>> predicateAsync, TRight defaultValue,
+        CancellationToken cancellationToken = default)
+        => IsRight ? this : (await predicateAsync(_left, cancellationToken) ? this : new(defaultValue));
+
     /// <summary>
     /// Filters the right side of this instance by a predicate, returning a new <see cref="Either{TLeft, TRight}"/>
-    /// with the default value produced by the specified factory method on the left if the predicate fails.
+    /// with the specified default value on the left if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereRightAsync(
+        Func<TRight, Task<bool>> predicateAsync, TLeft defaultValue)
+        => IsRight ? (await predicateAsync(_right) ? this : new(defaultValue)) : this;
+
+    /// <summary>
+    /// Filters the right side of this instance by a predicate, returning a new <see cref="Either{TLeft, TRight}"/>
+    /// with the specified default value on the left if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereRightAsync(
+        Func<TRight, CancellationToken, Task<bool>> predicateAsync, TLeft defaultValue,
+        CancellationToken cancellationToken = default)
+        => IsRight ? (await predicateAsync(_right, cancellationToken) ? this : new(defaultValue)) : this;
+    #endregion
+    #endregion
+
+    #region Lazy
+    #region Synchronous
+    /// <summary>
+    /// Filters the left side of this instance by a predicate, returning a new <see cref="Either{TLeft, TRight}"/>
+    /// with the default value produced by the specified factory method on the right if the predicate fails.
     /// </summary>
     /// <param name="predicate"></param>
-    /// <param name="defaultValueFactory"></param>
+    /// <param name="defaultFactory"></param>
     /// <returns></returns>
     [InstanceNotDefault]
-    public Either<TLeft, TRight> WhereLeft(Func<TLeft, bool> predicate, Func<TRight> defaultValueFactory)
-        => IsRight ? this : (predicate(_left) ? this : new(defaultValueFactory()));
+    public Either<TLeft, TRight> WhereLeftLazy(Func<TLeft, bool> predicate, Func<TRight> defaultFactory)
+        => IsRight ? this : (predicate(_left) ? this : new(defaultFactory()));
 
     /// <summary>
     /// Filters the right side of this instance by a predicate, returning a new <see cref="Either{TLeft, TRight}"/>
     /// with the default value produced by the specified factory method on the left if the predicate fails.
     /// </summary>
     /// <param name="predicate"></param>
-    /// <param name="defaultValueFactory"></param>
+    /// <param name="defaultFactory"></param>
     /// <returns></returns>
-    public Either<TLeft, TRight> WhereRight(Func<TRight, bool> predicate, Func<TLeft> defaultValueFactory)
-        => IsRight ? (predicate(_right) ? this : new(defaultValueFactory())) : this;
+    public Either<TLeft, TRight> WhereRightLazy(Func<TRight, bool> predicate, Func<TLeft> defaultFactory)
+        => IsRight ? (predicate(_right) ? this : new(defaultFactory())) : this;
+    #endregion
+
+    #region Asynchronous
+    #region Only Predicate Async
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// right if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactory"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
+        Func<TLeft, Task<bool>> predicateAsync, Func<TRight> defaultFactory)
+        => IsRight ?this : (await predicateAsync(_left) ? this : new(defaultFactory()));
+
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// right if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactory"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
+        Func<TLeft, CancellationToken, Task<bool>> predicateAsync, Func<TRight> defaultFactory,
+        CancellationToken cancellationToken = default)
+        => IsRight ? this : (await predicateAsync(_left, cancellationToken) ? this : new(defaultFactory()));
+
+    /// <summary>
+    /// Asynchronously filters the right side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// left if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactory"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereRightLazyAsync(
+        Func<TRight, Task<bool>> predicateAsync, Func<TLeft> defaultFactory)
+        => IsRight ? (await predicateAsync(_right) ? this : defaultFactory()) : this;
+
+    /// <summary>
+    /// Asynchronously filters the right side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// left if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactory"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereRightLazyAsync(
+        Func<TRight, CancellationToken, Task<bool>> predicateAsync, Func<TLeft> defaultFactory,
+        CancellationToken cancellationToken = default)
+        => IsRight ? (await predicateAsync(_right, cancellationToken) ? this : defaultFactory()) : this;
+    #endregion
+
+    #region Only Factory Async
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// right if the predicate fails.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
+        Func<TLeft, bool> predicate, Func<Task<TRight>> defaultFactoryAsync)
+        => IsRight ? this : (predicate(_left) ? this : new(await defaultFactoryAsync()));
+
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// right if the predicate fails.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
+        Func<TLeft, bool> predicate, Func<CancellationToken, Task<TRight>> defaultFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? this : (predicate(_left) ? this : new(await defaultFactoryAsync(cancellationToken)));
+
+    /// <summary>
+    /// Asynchronously filters the right side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// left if the predicate fails.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereRightLazyAsync(
+        Func<TRight, bool> predicate, Func<Task<TLeft>> defaultFactoryAsync)
+        => IsRight ? (predicate(_right) ? this : await defaultFactoryAsync()) : this;
+
+    /// <summary>
+    /// Asynchronously filters the right side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// left if the predicate fails.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereRightLazyAsync(
+        Func<TRight, bool> predicate, Func<CancellationToken, Task<TLeft>> defaultFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? (predicate(_right) ? this : await defaultFactoryAsync(cancellationToken)) : this;
+    #endregion
+
+    #region Both Async
+    #region Non-Cancellable
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// right if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
+        Func<TLeft, Task<bool>> predicateAsync, Func<Task<TRight>> defaultFactoryAsync)
+        => IsRight ? this : (await predicateAsync(_left) ? this : new(await defaultFactoryAsync()));
+
+    /// <summary>
+    /// Asynchronously filters the right side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// left if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereRightLazyAsync(
+        Func<TRight, Task<bool>> predicateAsync, Func<Task<TLeft>> defaultFactoryAsync)
+        => IsRight ? (await predicateAsync(_right) ? this : await defaultFactoryAsync()) : this;
+    #endregion
+
+    #region Only Predicate Cancellable
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// right if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
+        Func<TLeft, CancellationToken, Task<bool>> predicateAsync, Func<Task<TRight>> defaultFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? this : (await predicateAsync(_left, cancellationToken) ? this : new(await defaultFactoryAsync()));
+
+    /// <summary>
+    /// Asynchronously filters the right side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// left if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereRightLazyAsync(
+        Func<TRight, CancellationToken, Task<bool>> predicateAsync, Func<Task<TLeft>> defaultFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? (await predicateAsync(_right, cancellationToken) ? this : new(await defaultFactoryAsync())) : this;
+    #endregion
+
+    #region Only Factory Cancellable
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// right if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
+        Func<TLeft, Task<bool>> predicateAsync, Func<CancellationToken, Task<TRight>> defaultFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? this : (await predicateAsync(_left) ? this : new(await defaultFactoryAsync(cancellationToken)));
+
+    /// <summary>
+    /// Asynchronously filters the right side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// left if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereRightLazyAsync(
+        Func<TRight, Task<bool>> predicateAsync, Func<CancellationToken, Task<TLeft>> defaultFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight ? (await predicateAsync(_right) ? this : await defaultFactoryAsync(cancellationToken)) : this;
+    #endregion
+
+    #region Both Cancellable
+    /// <summary>
+    /// Asynchronously filters the left side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// right if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
+        Func<TLeft, CancellationToken, Task<bool>> predicateAsync,
+        Func<CancellationToken, Task<TRight>> defaultFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight
+            ? this
+            : (await predicateAsync(_left, cancellationToken) ? this : await defaultFactoryAsync(cancellationToken));
+
+    /// <summary>
+    /// Asynchronously filters the right side of this instance by a predicate, returning a new
+    /// <see cref="Either{TLeft, TRight}"/> with the default value produced by the specified factory method on the
+    /// left if the predicate fails.
+    /// </summary>
+    /// <param name="predicateAsync"></param>
+    /// <param name="defaultFactoryAsync"></param>
+    /// <param name="cancellationToken"></param
+    /// <returns></returns>
+    public async Task<Either<TLeft, TRight>> WhereRightLazyAsync(
+        Func<TRight, CancellationToken, Task<bool>> predicateAsync,
+        Func<CancellationToken, Task<TLeft>> defaultFactoryAsync,
+        CancellationToken cancellationToken = default)
+        => IsRight
+            ? (await predicateAsync(_right, cancellationToken) ? this : await defaultFactoryAsync(cancellationToken))
+            : this;
+    #endregion
+    #endregion
+    #endregion
     #endregion
     #endregion
     #endregion
