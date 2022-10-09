@@ -1245,6 +1245,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="predicateAsync"></param>
     /// <param name="defaultValue"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public async Task<Either<TLeft, TRight>> WhereLeftAsync(
         Func<TLeft, Task<bool>> predicateAsync, TRight defaultValue)
         => IsRight ? this : (await predicateAsync(_left) ? this : new(defaultValue));
@@ -1257,6 +1258,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="defaultValue"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public async Task<Either<TLeft, TRight>> WhereLeftAsync(
         Func<TLeft, CancellationToken, Task<bool>> predicateAsync, TRight defaultValue,
         CancellationToken cancellationToken = default)
@@ -1321,6 +1323,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="predicateAsync"></param>
     /// <param name="defaultFactory"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
         Func<TLeft, Task<bool>> predicateAsync, Func<TRight> defaultFactory)
         => IsRight ?this : (await predicateAsync(_left) ? this : new(defaultFactory()));
@@ -1334,6 +1337,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="defaultFactory"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
         Func<TLeft, CancellationToken, Task<bool>> predicateAsync, Func<TRight> defaultFactory,
         CancellationToken cancellationToken = default)
@@ -1375,6 +1379,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="predicate"></param>
     /// <param name="defaultFactoryAsync"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
         Func<TLeft, bool> predicate, Func<Task<TRight>> defaultFactoryAsync)
         => IsRight ? this : (predicate(_left) ? this : new(await defaultFactoryAsync()));
@@ -1388,6 +1393,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="defaultFactoryAsync"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
         Func<TLeft, bool> predicate, Func<CancellationToken, Task<TRight>> defaultFactoryAsync,
         CancellationToken cancellationToken = default)
@@ -1430,6 +1436,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="predicateAsync"></param>
     /// <param name="defaultFactoryAsync"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
         Func<TLeft, Task<bool>> predicateAsync, Func<Task<TRight>> defaultFactoryAsync)
         => IsRight ? this : (await predicateAsync(_left) ? this : new(await defaultFactoryAsync()));
@@ -1457,6 +1464,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="defaultFactoryAsync"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
         Func<TLeft, CancellationToken, Task<bool>> predicateAsync, Func<Task<TRight>> defaultFactoryAsync,
         CancellationToken cancellationToken = default)
@@ -1487,6 +1495,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="defaultFactoryAsync"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
         Func<TLeft, Task<bool>> predicateAsync, Func<CancellationToken, Task<TRight>> defaultFactoryAsync,
         CancellationToken cancellationToken = default)
@@ -1517,6 +1526,7 @@ public readonly record struct Either<TLeft, TRight> : IDefaultableStruct
     /// <param name="defaultFactoryAsync"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [InstanceNotDefault]
     public async Task<Either<TLeft, TRight>> WhereLeftLazyAsync(
         Func<TLeft, CancellationToken, Task<bool>> predicateAsync,
         Func<CancellationToken, Task<TRight>> defaultFactoryAsync,
