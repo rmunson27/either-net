@@ -13,53 +13,53 @@ namespace RemTest.Core.Utilities.Monads;
 public class ApplicableTest
 {
     #region Tests
-    #region Apply
+    #region Invoke
     /// <summary>
-    /// Tests the <see cref="EitherApplicableExtensions.ApplyLeft"/> method and related generic overloads.
+    /// Tests the <see cref="EitherApplicableExtensions.InvokeLeft"/> method and related generic overloads.
     /// </summary>
     [TestMethod]
-    public void TestApplyLeft()
+    public void TestFuncInvokeLeft()
     {
         // No arguments
-        Assert.That.HasLeft(1, Either<Func<int>, string>.New(GetOne).ApplyLeft());
-        Assert.That.HasRight("", Either<Func<int>, string>.New("").ApplyLeft());
+        Assert.That.HasLeft(1, Either<Func<int>, string>.New(GetOne).InvokeLeft());
+        Assert.That.HasRight("", Either<Func<int>, string>.New("").InvokeLeft());
 
         // 1 argument
-        Assert.That.HasLeft(16, Either<Func<int, int>, string>.New(Square).ApplyLeft(4));
-        Assert.That.HasRight("", Either<Func<int, int>, string>.New("").ApplyLeft(4));
+        Assert.That.HasLeft(16, Either<Func<int, int>, string>.New(Square).InvokeLeft(4));
+        Assert.That.HasRight("", Either<Func<int, int>, string>.New("").InvokeLeft(4));
 
         // 2 arguments (all generic overloads with 2 or more arguments are generated using the same method)
-        Assert.That.HasLeft(3, Either<Func<int, int, int>, string>.New(Divide).ApplyLeft(15, 5));
-        Assert.That.HasRight("", Either<Func<int, int, int>, string>.New("").ApplyLeft(1, 2));
+        Assert.That.HasLeft(3, Either<Func<int, int, int>, string>.New(Divide).InvokeLeft(15, 5));
+        Assert.That.HasRight("", Either<Func<int, int, int>, string>.New("").InvokeLeft(1, 2));
     }
 
     /// <summary>
-    /// Tests the <see cref="EitherApplicableExtensions.Apply"/> method.
+    /// Tests the <see cref="EitherApplicableExtensions.Invoke"/> method.
     /// </summary>
     [TestMethod]
-    public void TestApply()
+    public void TestFuncInvokeEither()
     {
-        Assert.That.HasLeft(1, Either<Func<int>, Func<int>>.NewLeft(GetOne).Apply());
-        Assert.That.HasRight(1, Either<Func<int>, Func<int>>.NewRight(GetOne).Apply());
+        Assert.That.HasLeft(1, Either<Func<int>, Func<int>>.NewLeft(GetOne).InvokeEither());
+        Assert.That.HasRight(1, Either<Func<int>, Func<int>>.NewRight(GetOne).InvokeEither());
     }
 
     /// <summary>
-    /// Tests the <see cref="EitherApplicableExtensions.ApplyRight"/> method and related generic overloads.
+    /// Tests the <see cref="EitherApplicableExtensions.InvokeRight"/> method and related generic overloads.
     /// </summary>
     [TestMethod]
-    public void TestApplyRight()
+    public void TestFuncInvokeRight()
     {
         // No arguments
-        Assert.That.HasRight(1, Either<string, Func<int>>.New(GetOne).ApplyRight());
-        Assert.That.HasLeft("", Either<string, Func<int>>.New("").ApplyRight());
+        Assert.That.HasRight(1, Either<string, Func<int>>.New(GetOne).InvokeRight());
+        Assert.That.HasLeft("", Either<string, Func<int>>.New("").InvokeRight());
 
         // 1 argument
-        Assert.That.HasRight(16, Either<string, Func<int, int>>.New(Square).ApplyRight(4));
-        Assert.That.HasLeft("", Either<string, Func<int, int>>.New("").ApplyRight(4));
+        Assert.That.HasRight(16, Either<string, Func<int, int>>.New(Square).InvokeRight(4));
+        Assert.That.HasLeft("", Either<string, Func<int, int>>.New("").InvokeRight(4));
 
         // 2 arguments (all generic overloads with 2 or more arguments are generated using the same method)
-        Assert.That.HasRight(5, Either<string, Func<int, int, int>>.New(Divide).ApplyRight(15, 3));
-        Assert.That.HasLeft("", Either<string, Func<int, int, int>>.New("").ApplyRight(1, 2));
+        Assert.That.HasRight(5, Either<string, Func<int, int, int>>.New(Divide).InvokeRight(15, 3));
+        Assert.That.HasLeft("", Either<string, Func<int, int, int>>.New("").InvokeRight(1, 2));
     }
     #endregion
 
@@ -68,7 +68,7 @@ public class ApplicableTest
     /// Tests the <see cref="EitherApplicableExtensions.InvokeLeft"/> method and related generic overloads.
     /// </summary>
     [TestMethod]
-    public void TestInvokeLeft()
+    public void TestActionInvokeLeft()
     {
         var testState = new ActionRunner();
 
@@ -95,18 +95,18 @@ public class ApplicableTest
     /// Tests the <see cref="EitherApplicableExtensions.Invoke"/> method.
     /// </summary>
     [TestMethod]
-    public void TestInvoke()
+    public void TestActionInvokeEither()
     {
         var testState = new ActionRunner();
 
         // Should do nothing if the delegate is null (but not throw an exception)
-        Either<Action?, Action?>.NewLeft(null).Invoke();
-        Either<Action?, Action?>.NewRight(null).Invoke();
+        Either<Action?, Action?>.NewLeft(null).InvokeEither();
+        Either<Action?, Action?>.NewRight(null).InvokeEither();
 
         // Should invoke the delegate
-        Either<Action, Action>.NewLeft(testState.IncrementI).Invoke();
+        Either<Action, Action>.NewLeft(testState.IncrementI).InvokeEither();
         Assert.AreEqual(1, testState.I);
-        Either<Action, Action>.NewRight(testState.IncrementI).Invoke();
+        Either<Action, Action>.NewRight(testState.IncrementI).InvokeEither();
         Assert.AreEqual(2, testState.I);
     }
 
@@ -114,7 +114,7 @@ public class ApplicableTest
     /// Tests the <see cref="EitherApplicableExtensions.InvokeRight"/> method and related generic overloads.
     /// </summary>
     [TestMethod]
-    public void TestInvokeRight()
+    public void TestActionInvokeRight()
     {
         var testState = new ActionRunner();
 

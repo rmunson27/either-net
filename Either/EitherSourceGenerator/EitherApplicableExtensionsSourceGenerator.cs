@@ -76,7 +76,7 @@ public static class {TypeName}
     /// <typeparam name=""TRight"">The type of the right side.</typeparam>
     /// <param name=""either""></param>
     /// <returns></returns>
-    public static Either<TLeftResult, TRight> ApplyLeft<TLeftResult, TRight>(
+    public static Either<TLeftResult, TRight> InvokeLeft<TLeftResult, TRight>(
         [NonDefaultableStruct] this Either<Func<TLeftResult>, TRight> either)
         => either.IsRight ? new(either._right) : new(either._left());
 
@@ -87,7 +87,7 @@ public static class {TypeName}
     /// <typeparam name=""TRightResult"">The return type of the right side.</typeparam>
     /// <param name=""either""></param>
     /// <returns></returns>
-    public static Either<TLeftResult, TRightResult> Apply<TLeftResult, TRightResult>(
+    public static Either<TLeftResult, TRightResult> InvokeEither<TLeftResult, TRightResult>(
         [NonDefaultableStruct] this Either<Func<TLeftResult>, Func<TRightResult>> either)
         => either.IsRight ? new(either._right()) : new(either._left());
 
@@ -99,7 +99,7 @@ public static class {TypeName}
     /// <param name=""either""></param>
     /// <returns></returns>
     [return: NotDefaultIfNotDefault(""either"")]
-    public static Either<TLeft, TRightResult> ApplyRight<TLeft, TRightResult>(
+    public static Either<TLeft, TRightResult> InvokeRight<TLeft, TRightResult>(
         this Either<TLeft, Func<TRightResult>> either)
         => either.IsRight ? new(either._right()) : new(either._left);
 
@@ -122,7 +122,7 @@ public static class {TypeName}
     /// Calls the function wrapped in the current instance.
     /// </summary>
     /// <param name=""either""></param>
-    public static void Invoke(
+    public static void InvokeEither(
 #nullable disable
         this Either<Action, Action> either)
 #nullable enable
@@ -159,7 +159,7 @@ public static class {TypeName}
     /// <param name=""either""></param>
     /// <param name=""arg"">The argument to apply the left side to.</param>
     /// <returns></returns>
-    public static Either<TLeftResult, TRight> ApplyLeft<TArg, TLeftResult, TRight>(
+    public static Either<TLeftResult, TRight> InvokeLeft<TArg, TLeftResult, TRight>(
         [NonDefaultableStruct] this Either<Func<TArg, TLeftResult>, TRight> either, TArg arg)
         => either.IsRight ? new(either._right) : new(either._left(arg));
 
@@ -173,7 +173,7 @@ public static class {TypeName}
     /// <param name=""arg"">The argument to apply the right side to.</param>
     /// <returns></returns>
     [return: NotDefaultIfNotDefault(""either"")]
-    public static Either<TLeft, TRightResult> ApplyRight<TLeft, TArg, TRightResult>(
+    public static Either<TLeft, TRightResult> InvokeRight<TLeft, TArg, TRightResult>(
         this Either<TLeft, Func<TArg, TRightResult>> either, TArg arg)
         => either.IsRight ? new(either._right(arg)) : new(either._left);
 
@@ -302,7 +302,7 @@ public static class {TypeName}
     /// <param name=""either""></param>
 {delegateArgDocsStr(EitherSide.Left)}
     /// <returns></returns>
-    public static Either<TLeftResult, TRight> ApplyLeft<{delegateArgTypeListStr}, TLeftResult, TRight>(
+    public static Either<TLeftResult, TRight> InvokeLeft<{delegateArgTypeListStr}, TLeftResult, TRight>(
         [NonDefaultableStruct] {funcMethodArgDeclarationsListStr(EitherSide.Left)})
         => either.IsRight ? new(either._right) : new(either._left({delegateArgNameListStr}));
 
@@ -316,7 +316,7 @@ public static class {TypeName}
 {delegateArgDocsStr(EitherSide.Right)}
     /// <returns></returns>
     [return: NotDefaultIfNotDefault(""either"")]
-    public static Either<TLeft, TRightResult> ApplyRight<TLeft, {delegateArgTypeListStr}, TRightResult>(
+    public static Either<TLeft, TRightResult> InvokeRight<TLeft, {delegateArgTypeListStr}, TRightResult>(
         {funcMethodArgDeclarationsListStr(EitherSide.Right)})
         => either.IsRight ? new(either._right({delegateArgNameListStr})) : new(either._left);
 
